@@ -1,0 +1,365 @@
+<div class="reports-container">
+  <h1 class="page-title">Reports</h1>
+  <p class="page-lead">Sales by period, cash vs credit, product and customer rollups, single-item drill-downs, and supplier purchases.</p>
+
+  <mat-tab-group mat-stretch-tabs="false" class="report-tabs">
+    <mat-tab label="Date range (cash / credit)">
+      <mat-card class="report-card">
+        <mat-card-header>
+          <mat-card-title>Sales by date range</mat-card-title>
+          <mat-card-subtitle>Totals split into cash-style vs credit invoices.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="dateRangeForm" (ngSubmit)="loadDateRangeReport()" class="report-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Start date</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End date</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Generate</button>
+          </form>
+
+          <div *ngIf="dateRangeReport" class="report-summary">
+            <h3>Summary</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Total sales</span>
+                <span class="value">{{ dateRangeReport.totalSales | currency:'INR' }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Transactions</span>
+                <span class="value">{{ dateRangeReport.totalTransactions }}</span>
+              </div>
+              <div class="summary-item accent-cash">
+                <span class="label">Cash / UPI / card (paid)</span>
+                <span class="value">{{ (dateRangeReport.cashSalesTotal ?? 0) | currency:'INR' }}</span>
+                <span class="sub">{{ dateRangeReport.cashTransactionCount ?? 0 }} invoices</span>
+              </div>
+              <div class="summary-item accent-credit">
+                <span class="label">Credit sales</span>
+                <span class="value">{{ (dateRangeReport.creditSalesTotal ?? 0) | currency:'INR' }}</span>
+                <span class="sub">{{ dateRangeReport.creditTransactionCount ?? 0 }} invoices</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="dateRangeReport && dateRangeSalesDataSource.data.length > 0" class="report-table">
+            <table mat-table [dataSource]="dateRangeSalesDataSource" class="sales-table">
+              <ng-container matColumnDef="invoiceNumber">
+                <th mat-header-cell *matHeaderCellDef>Invoice</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.invoiceNumber }}</td>
+              </ng-container>
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.createdAt | date:'short' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef>Customer</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.customerName || 'Walk-in' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef>Total</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.finalAmount | currency:'INR' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="paymentMode">
+                <th mat-header-cell *matHeaderCellDef>Payment</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.paymentMode }}</td>
+              </ng-container>
+              <ng-container matColumnDef="credit">
+                <th mat-header-cell *matHeaderCellDef>Credit</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.isCredit ? 'Yes' : 'No' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="report-actions-col">Print</th>
+                <td mat-cell *matCellDef="let sale" class="report-actions-col">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    color="primary"
+                    (click)="printInvoiceFromRow(sale)"
+                    [disabled]="printLoadingId === sale.id">
+                    <mat-icon *ngIf="printLoadingId !== sale.id">print</mat-icon>
+                    <mat-spinner *ngIf="printLoadingId === sale.id" diameter="18" class="report-print-spin"></mat-spinner>
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="dateRangeDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: dateRangeDisplayedColumns;"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Product & customer summary">
+      <mat-card class="report-card">
+        <mat-card-header>
+          <mat-card-title>Rollups for all products & customers</mat-card-title>
+          <mat-card-subtitle>Ranked by revenue / spend in the period.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="summaryRangeForm" (ngSubmit)="loadSalesSummaries()" class="report-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Start date</mat-label>
+              <input matInput [matDatepicker]="sumStart" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="sumStart"></mat-datepicker-toggle>
+              <mat-datepicker #sumStart></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End date</mat-label>
+              <input matInput [matDatepicker]="sumEnd" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="sumEnd"></mat-datepicker-toggle>
+              <mat-datepicker #sumEnd></mat-datepicker>
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Load summaries</button>
+          </form>
+
+          <div class="dual-tables" *ngIf="productSummaryDataSource.data.length || customerSummaryDataSource.data.length">
+            <div class="table-block">
+              <h4>Product-wise sales</h4>
+              <table mat-table [dataSource]="productSummaryDataSource" class="sales-table">
+                <ng-container matColumnDef="productName">
+                  <th mat-header-cell *matHeaderCellDef>Product</th>
+                  <td mat-cell *matCellDef="let row">{{ row.productName }}</td>
+                </ng-container>
+                <ng-container matColumnDef="totalQuantity">
+                  <th mat-header-cell *matHeaderCellDef class="num">Qty</th>
+                  <td mat-cell *matCellDef="let row" class="num">{{ row.totalQuantity | number:'1.0-2' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="totalRevenue">
+                  <th mat-header-cell *matHeaderCellDef class="num">Revenue</th>
+                  <td mat-cell *matCellDef="let row" class="num">{{ row.totalRevenue | currency:'INR' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="lineCount">
+                  <th mat-header-cell *matHeaderCellDef class="num">Lines</th>
+                  <td mat-cell *matCellDef="let row" class="num">{{ row.lineCount }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="productSummaryDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: productSummaryDisplayedColumns;"></tr>
+              </table>
+            </div>
+            <div class="table-block">
+              <h4>Customer-wise sales</h4>
+              <table mat-table [dataSource]="customerSummaryDataSource" class="sales-table">
+                <ng-container matColumnDef="customerName">
+                  <th mat-header-cell *matHeaderCellDef>Customer</th>
+                  <td mat-cell *matCellDef="let row">{{ row.customerName }}</td>
+                </ng-container>
+                <ng-container matColumnDef="totalSales">
+                  <th mat-header-cell *matHeaderCellDef class="num">Total</th>
+                  <td mat-cell *matCellDef="let row" class="num">{{ row.totalSales | currency:'INR' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="transactionCount">
+                  <th mat-header-cell *matHeaderCellDef class="num">Invoices</th>
+                  <td mat-cell *matCellDef="let row" class="num">{{ row.transactionCount }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="customerSummaryDisplayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: customerSummaryDisplayedColumns;"></tr>
+              </table>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Customer detail">
+      <mat-card class="report-card">
+        <mat-card-header>
+          <mat-card-title>Customer drill-down</mat-card-title>
+          <mat-card-subtitle>Invoices for one customer.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="customerReportForm" (ngSubmit)="loadCustomerReport()" class="report-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Customer</mat-label>
+              <mat-select formControlName="customerId">
+                <mat-option *ngFor="let customer of customers" [value]="customer.id">
+                  {{ customer.name }} — {{ customer.phone }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Start date</mat-label>
+              <input matInput [matDatepicker]="cStart" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="cStart"></mat-datepicker-toggle>
+              <mat-datepicker #cStart></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End date</mat-label>
+              <input matInput [matDatepicker]="cEnd" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="cEnd"></mat-datepicker-toggle>
+              <mat-datepicker #cEnd></mat-datepicker>
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Generate</button>
+          </form>
+
+          <div *ngIf="customerReport" class="report-summary">
+            <h3>{{ customerReport.customerName }}</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Total sales</span>
+                <span class="value">{{ customerReport.totalSales | currency:'INR' }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Transactions</span>
+                <span class="value">{{ customerReport.totalTransactions }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="customerReport && customerSalesDataSource.data.length > 0" class="report-table">
+            <table mat-table [dataSource]="customerSalesDataSource" class="sales-table">
+              <ng-container matColumnDef="invoiceNumber">
+                <th mat-header-cell *matHeaderCellDef>Invoice</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.invoiceNumber }}</td>
+              </ng-container>
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.createdAt | date:'short' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef>Total</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.finalAmount | currency:'INR' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="paymentMode">
+                <th mat-header-cell *matHeaderCellDef>Payment</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.paymentMode }}</td>
+              </ng-container>
+              <ng-container matColumnDef="credit">
+                <th mat-header-cell *matHeaderCellDef>Credit</th>
+                <td mat-cell *matCellDef="let sale">{{ sale.isCredit ? 'Yes' : 'No' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="report-actions-col">Print</th>
+                <td mat-cell *matCellDef="let sale" class="report-actions-col">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    color="primary"
+                    (click)="printInvoiceFromRow(sale)"
+                    [disabled]="printLoadingId === sale.id">
+                    <mat-icon *ngIf="printLoadingId !== sale.id">print</mat-icon>
+                    <mat-spinner *ngIf="printLoadingId === sale.id" diameter="18" class="report-print-spin"></mat-spinner>
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="customerDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: customerDisplayedColumns;"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Product detail">
+      <mat-card class="report-card">
+        <mat-card-header>
+          <mat-card-title>Single product</mat-card-title>
+          <mat-card-subtitle>Quantity and revenue for one SKU.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="productReportForm" (ngSubmit)="loadProductReport()" class="report-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Product</mat-label>
+              <mat-select formControlName="productId">
+                <mat-option *ngFor="let product of products" [value]="product.id">
+                  {{ product.name }} — {{ product.barcode }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Start date</mat-label>
+              <input matInput [matDatepicker]="pStart" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="pStart"></mat-datepicker-toggle>
+              <mat-datepicker #pStart></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End date</mat-label>
+              <input matInput [matDatepicker]="pEnd" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="pEnd"></mat-datepicker-toggle>
+              <mat-datepicker #pEnd></mat-datepicker>
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Generate</button>
+          </form>
+
+          <div *ngIf="productReport" class="report-summary">
+            <h3>{{ productReport.productName }}</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <span class="label">Quantity sold</span>
+                <span class="value">{{ productReport.totalQuantity | number:'1.0-2' }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Revenue</span>
+                <span class="value">{{ productReport.totalRevenue | currency:'INR' }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="label">Line count</span>
+                <span class="value">{{ productReport.transactionCount }}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+
+    <mat-tab label="Supplier purchases">
+      <mat-card class="report-card">
+        <mat-card-header>
+          <mat-card-title>Supplier-wise purchases</mat-card-title>
+          <mat-card-subtitle>Optional filter by supplier; leave empty for all suppliers with purchases.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="supplierReportForm" (ngSubmit)="loadSupplierReport()" class="report-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Supplier (optional)</mat-label>
+              <mat-select formControlName="supplierId">
+                <mat-option [value]="null">All suppliers</mat-option>
+                <mat-option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Start date</mat-label>
+              <input matInput [matDatepicker]="sStart" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="sStart"></mat-datepicker-toggle>
+              <mat-datepicker #sStart></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End date</mat-label>
+              <input matInput [matDatepicker]="sEnd" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="sEnd"></mat-datepicker-toggle>
+              <mat-datepicker #sEnd></mat-datepicker>
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Generate</button>
+          </form>
+
+          <div *ngIf="supplierDataSource.data.length" class="report-table">
+            <table mat-table [dataSource]="supplierDataSource" class="sales-table">
+              <ng-container matColumnDef="supplierName">
+                <th mat-header-cell *matHeaderCellDef>Supplier</th>
+                <td mat-cell *matCellDef="let row">{{ row.supplierName }}</td>
+              </ng-container>
+              <ng-container matColumnDef="totalPurchaseAmount">
+                <th mat-header-cell *matHeaderCellDef class="num">Purchase total</th>
+                <td mat-cell *matCellDef="let row" class="num">{{ row.totalPurchaseAmount | currency:'INR' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="transactionCount">
+                <th mat-header-cell *matHeaderCellDef class="num">POs</th>
+                <td mat-cell *matCellDef="let row" class="num">{{ row.transactionCount }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="supplierDisplayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: supplierDisplayedColumns;"></tr>
+            </table>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-tab>
+  </mat-tab-group>
+</div>

@@ -1,0 +1,249 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="dashboard-title-block">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="dashboard-subtitle" *ngIf="lastRefreshed">
+        Last updated {{ lastRefreshed | date:'medium' }}
+      </p>
+    </div>
+    <button mat-raised-button color="primary" type="button" (click)="refreshDashboard()" [disabled]="isLoading">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading dashboard…</p>
+  </div>
+
+  <div *ngIf="!isLoading" class="dashboard-body">
+    <!-- Quick actions -->
+    <mat-card class="quick-actions-card">
+      <div class="quick-actions-inner">
+        <div class="quick-actions-label">
+          <mat-icon>bolt</mat-icon>
+          <span>Quick actions</span>
+        </div>
+        <div class="quick-actions-buttons">
+          <a mat-stroked-button color="primary" routerLink="/sales">
+            <mat-icon>point_of_sale</mat-icon>
+            New sale
+          </a>
+          <a mat-stroked-button color="primary" routerLink="/purchases">
+            <mat-icon>add_shopping_cart</mat-icon>
+            Record purchase
+          </a>
+          <a mat-stroked-button color="primary" routerLink="/products">
+            <mat-icon>inventory_2</mat-icon>
+            Products
+          </a>
+          <a mat-stroked-button color="primary" routerLink="/credits">
+            <mat-icon>payments</mat-icon>
+            Credits
+          </a>
+          <a mat-stroked-button color="primary" routerLink="/online-orders">
+            <mat-icon>shopping_bag</mat-icon>
+            Online orders
+            <span class="quick-badge" *ngIf="unseenOnlineOrders > 0">{{ unseenOnlineOrders }}</span>
+          </a>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- KPI grid -->
+    <div class="kpi-grid">
+      <mat-card class="stat-card sales-card">
+        <mat-card-content>
+          <div class="stat-icon" aria-hidden="true">
+            <mat-icon>point_of_sale</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ (analytics.todaySales || 0) | currency:'INR':'symbol':'1.0-0' }}</h3>
+            <p>Today's sales</p>
+            <span class="stat-subtitle">{{ analytics.todayTransactions || 0 }} transactions</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card week-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ (analytics.weekSales || 0) | currency:'INR':'symbol':'1.0-0' }}</h3>
+            <p>This week</p>
+            <span class="stat-subtitle">Last 7 days</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card month-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>calendar_month</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ (analytics.monthSales || 0) | currency:'INR':'symbol':'1.0-0' }}</h3>
+            <p>This month</p>
+            <span class="stat-subtitle">Last 30 days</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card credit-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>account_balance_wallet</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ (analytics.totalOutstandingCredits || 0) | currency:'INR':'symbol':'1.0-0' }}</h3>
+            <p>Outstanding credits</p>
+            <span class="stat-subtitle">Total pending</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card product-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>inventory_2</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ analytics.totalProducts || 0 }}</h3>
+            <p>Products</p>
+            <span class="stat-subtitle">In catalog</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card low-stock-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>warning</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ analytics.lowStockCount || 0 }}</h3>
+            <p>Low stock</p>
+            <span class="stat-subtitle">Review restocking</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card customer-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>people</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ analytics.activeCustomers || 0 }}</h3>
+            <p>Customers</p>
+            <span class="stat-subtitle">Registered</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <a class="stat-card-link" routerLink="/online-orders">
+        <mat-card class="stat-card online-orders-card">
+          <mat-card-content>
+            <div class="stat-icon">
+              <mat-icon>shopping_bag</mat-icon>
+            </div>
+            <div class="stat-info">
+              <h3>{{ unseenOnlineOrders }}</h3>
+              <p>New online orders</p>
+              <span class="stat-subtitle">Awaiting review</span>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </a>
+
+      <mat-card class="stat-card profit-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>savings</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ ((analytics.monthSales || 0) * 0.7) | currency:'INR':'symbol':'1.0-0' }}</h3>
+            <p>Est. margin</p>
+            <span class="stat-subtitle">Illustrative (~70% of month sales)</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="insights-row">
+      <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title>Sales trend</mat-card-title>
+          <mat-card-subtitle>Last 30 days</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-wrapper">
+            <canvas
+              baseChart
+              [data]="salesChartData"
+              [options]="salesChartOptions"
+              [type]="'line'">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="insights-stack">
+        <mat-card class="insight-card">
+          <mat-card-header>
+            <mat-card-title>Top products</mat-card-title>
+            <mat-card-subtitle>By catalog snapshot</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="empty-hint" *ngIf="topProducts.length === 0">No product data yet.</div>
+            <table class="insight-table" *ngIf="topProducts.length > 0">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th class="num">Stock</th>
+                  <th class="num">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of topProducts">
+                  <td>{{ p.name }}</td>
+                  <td class="num">{{ p.currentStock ?? '—' }}</td>
+                  <td class="num">{{ (p.sellingPrice || 0) | currency:'INR':'symbol':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="insight-card">
+          <mat-card-header>
+            <mat-card-title>Top customers</mat-card-title>
+            <mat-card-subtitle>By total spent</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="empty-hint" *ngIf="topCustomers.length === 0">No customer sales yet.</div>
+            <table class="insight-table" *ngIf="topCustomers.length > 0">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th class="num">Orders</th>
+                  <th class="num">Spent</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of topCustomers">
+                  <td>{{ c.name }}</td>
+                  <td class="num">{{ c.totalPurchases ?? 0 }}</td>
+                  <td class="num">{{ (c.totalSpent || 0) | currency:'INR':'symbol':'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="customerForm" class="customer-form">
+    <!-- Customer Name -->
+    <mat-form-field class="full-width">
+      <mat-label>Customer Name</mat-label>
+      <input matInput formControlName="customerName" required>
+      <mat-error *ngIf="customerForm.get('customerName')?.hasError('required')">
+        Customer name is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Phone Number -->
+    <mat-form-field class="full-width">
+      <mat-label>Phone Number</mat-label>
+      <input matInput formControlName="phoneNumber" type="tel" placeholder="e.g., 9876543210">
+      <mat-hint>Optional - Unique phone number for customer identification</mat-hint>
+    </mat-form-field>
+
+    <!-- Email -->
+    <mat-form-field class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="customer@example.com">
+      <mat-error *ngIf="customerForm.get('email')?.hasError('email')">
+        Please enter a valid email address
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Address -->
+    <mat-form-field class="full-width">
+      <mat-label>Address</mat-label>
+      <textarea matInput formControlName="address" rows="3" placeholder="Street, City, State, PIN"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="customerForm.invalid || isLoading">
+    <mat-icon *ngIf="isLoading">hourglass_empty</mat-icon>
+    {{ isLoading ? 'Saving...' : 'Save' }}
+  </button>
+</mat-dialog-actions>
+
+
+
+
+
+
+
+
+

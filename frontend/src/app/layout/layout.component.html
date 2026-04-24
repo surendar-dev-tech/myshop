@@ -1,0 +1,122 @@
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-header">
+      <div class="brand-mark" aria-hidden="true">MS</div>
+      <div class="brand-text">
+        <h2>MyShop</h2>
+        <p class="brand-tagline">Billing & inventory</p>
+      </div>
+    </div>
+
+    <mat-nav-list class="nav-list-main">
+      <div class="nav-section-label">Overview</div>
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </a>
+      <a mat-list-item routerLink="/online-orders" routerLinkActive="active">
+        <mat-icon
+          [matBadge]="unseenOnlineOrders"
+          [matBadgeHidden]="unseenOnlineOrders === 0"
+          matBadgeSize="small"
+          matBadgeColor="warn">shopping_bag</mat-icon>
+        <span>Online orders</span>
+      </a>
+
+      <div class="nav-section-label">Sales & stock</div>
+      <a mat-list-item routerLink="/sales" routerLinkActive="active">
+        <mat-icon>point_of_sale</mat-icon>
+        <span>Sales</span>
+      </a>
+      <a mat-list-item routerLink="/invoices" routerLinkActive="active">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Invoices</span>
+      </a>
+      <a mat-list-item routerLink="/purchases" routerLinkActive="active">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>Purchases</span>
+      </a>
+      <a mat-list-item routerLink="/purchase-returns" routerLinkActive="active">
+        <mat-icon>assignment_return</mat-icon>
+        <span>Purchase returns</span>
+      </a>
+      <a mat-list-item routerLink="/sales-returns" routerLinkActive="active">
+        <mat-icon>keyboard_return</mat-icon>
+        <span>Sales returns</span>
+      </a>
+      <a mat-list-item routerLink="/products" routerLinkActive="active">
+        <mat-icon>inventory_2</mat-icon>
+        <span>Products</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/categories"
+        routerLinkActive="active"
+        *ngIf="canManageCategories">
+        <mat-icon>category</mat-icon>
+        <span>Categories</span>
+      </a>
+
+      <div class="nav-section-label">People</div>
+      <a mat-list-item routerLink="/customers" routerLinkActive="active">
+        <mat-icon>people</mat-icon>
+        <span>Customers</span>
+      </a>
+      <a mat-list-item routerLink="/suppliers" routerLinkActive="active">
+        <mat-icon>local_shipping</mat-icon>
+        <span>Suppliers</span>
+      </a>
+      <a mat-list-item routerLink="/employees" routerLinkActive="active" *ngIf="isAdmin">
+        <mat-icon>badge</mat-icon>
+        <span>Employees</span>
+      </a>
+
+      <div class="nav-section-label">Finance</div>
+      <a mat-list-item routerLink="/credits" routerLinkActive="active">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <span>Credits</span>
+      </a>
+      <a mat-list-item routerLink="/reports" routerLinkActive="active">
+        <mat-icon>assessment</mat-icon>
+        <span>Reports</span>
+      </a>
+
+      <div class="nav-section-label">Account</div>
+      <a mat-list-item routerLink="/profile" routerLinkActive="active">
+        <mat-icon>tune</mat-icon>
+        <span>Profile & settings</span>
+      </a>
+    </mat-nav-list>
+
+    <div class="sidenav-footer">
+      <span class="footer-version">v1.0</span>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="main-content">
+    <mat-toolbar class="app-toolbar">
+      <button mat-icon-button type="button" (click)="sidenav.toggle()" class="menu-button" aria-label="Toggle menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span class="toolbar-title">Store console</span>
+      <span class="toolbar-company" *ngIf="currentUser?.companyName">{{ currentUser.companyName }}</span>
+      <span class="spacer"></span>
+      <span class="username-wrap">
+        <span class="username">{{ currentUser?.username }}</span>
+        <span class="user-role-pill" *ngIf="roleToolbarLabel">{{ roleToolbarLabel }}</span>
+      </span>
+      <button mat-icon-button type="button" [matMenuTriggerFor]="userMenu" class="user-menu-button" aria-label="User menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item type="button" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

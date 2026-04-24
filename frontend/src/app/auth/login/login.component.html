@@ -1,0 +1,41 @@
+<div class="login-page">
+  <div class="login-backdrop" aria-hidden="true"></div>
+  <mat-card class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">MS</div>
+      <h1>MyShop</h1>
+      <p class="login-lead">Sign in to manage sales, stock, and billing.</p>
+    </div>
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" required autocomplete="username">
+          <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+            Username is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" required autocomplete="current-password">
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="loginForm.invalid || loading" class="full-width login-submit">
+          {{ loading ? 'Signing in…' : 'Sign in' }}
+        </button>
+
+        <p class="login-footer">
+          New here?
+          <a routerLink="/register">Create an account</a>
+        </p>
+        <p class="login-hint-customer">
+          Ordering online? Use the username and password your shop gave you, then sign in here.
+        </p>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

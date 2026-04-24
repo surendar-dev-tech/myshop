@@ -1,0 +1,76 @@
+<div class="employees-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Employees</h1>
+      <p class="page-subtitle">
+        Create staff logins for your shop. Each person gets a unique username and password for sales, products, and daily work.
+      </p>
+    </div>
+    <button mat-raised-button color="primary" type="button" (click)="openAddDialog()" class="add-button">
+      <mat-icon>person_add</mat-icon>
+      Add employee
+    </button>
+  </div>
+
+  <mat-card class="employees-card">
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading employees...</p>
+      </div>
+
+      <table
+        *ngIf="!isLoading && dataSource.data.length > 0"
+        mat-table
+        [dataSource]="dataSource"
+        class="employees-table">
+        <ng-container matColumnDef="username">
+          <th mat-header-cell *matHeaderCellDef>Username</th>
+          <td mat-cell *matCellDef="let row">{{ row.username }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let row">{{ row.fullName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef>Phone</th>
+          <td mat-cell *matCellDef="let row">{{ row.phone || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="role-badge" [class.admin]="row.role === 'ADMIN'">{{ row.role }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Active</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="active-pill" [class.inactive]="!row.active">{{ row.active ? 'Yes' : 'No' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="primary" type="button" (click)="openEditDialog(row)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div *ngIf="!isLoading && dataSource.data.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">groups</mat-icon>
+        <h3>No employees yet</h3>
+        <p>Add a staff member to give them their own login.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

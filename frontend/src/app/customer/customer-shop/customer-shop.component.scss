@@ -1,0 +1,155 @@
+.shop-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.shop-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.toolbar-title {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.toolbar-hint {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  margin-right: 0.5rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.shop-body {
+  display: grid;
+  grid-template-columns: 1fr minmax(280px, 340px);
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .shop-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loading-wrap {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.section-title {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.product-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+}
+
+.meta {
+  margin: 0.25rem 0;
+}
+
+.price {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.unit {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.stock {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0.5rem 0 0;
+}
+
+.empty-catalog {
+  color: #64748b;
+  margin-top: 1rem;
+}
+
+.cart-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  align-self: start;
+}
+
+.cart-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.cart-empty {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.cart-line {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.line-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.line-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+}
+
+.cart-summary {
+  margin-top: 1rem;
+}
+
+.full {
+  width: 100%;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem 0 1rem;
+  font-size: 1rem;
+}
+
+.place-btn {
+  width: 100%;
+}

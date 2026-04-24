@@ -1,0 +1,22 @@
+# Local database for MyShop backend (matches application.yml defaults: root / Admin, DB myshop_db)
+# Start:  docker compose up -d
+# Stop:   docker compose down
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: myshop-mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: Admin
+      MARIADB_DATABASE: myshop_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - myshop-mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  myshop-mariadb-data:

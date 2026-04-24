@@ -1,0 +1,61 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "myshop-frontend": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/myshop-frontend",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/_redirects"
+            ],
+            "styles": [
+              "@angular/material/prebuilt-themes/indigo-pink.css",
+              "src/styles.scss"
+            ],
+            "scripts": []
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "myshop-frontend:build",
+            "port": 4200
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false
+  }
+}
+
+
+
+
+
+
+
+
+

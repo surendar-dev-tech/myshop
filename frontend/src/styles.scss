@@ -1,0 +1,199 @@
+/* MyShop — billing / retail design tokens */
+:root {
+  --ms-primary: #0d9488;
+  --ms-primary-dark: #0f766e;
+  --ms-primary-soft: rgba(13, 148, 136, 0.12);
+  --ms-accent: #0ea5e9;
+  --ms-surface: #ffffff;
+  --ms-surface-2: #f8fafc;
+  --ms-border: rgba(15, 23, 42, 0.08);
+  --ms-text: #0f172a;
+  --ms-text-secondary: #475569;
+  --ms-text-muted: #64748b;
+  --ms-success: #059669;
+  --ms-warning: #d97706;
+  --ms-danger: #dc2626;
+
+  --primary-color: var(--ms-primary);
+  --secondary-color: var(--ms-primary-dark);
+  --accent-color: var(--ms-accent);
+  --success-color: var(--ms-success);
+  --warning-color: var(--ms-warning);
+  --error-color: var(--ms-danger);
+  --background-light: #f1f5f9;
+  --background-dark: #e2e8f0;
+  --text-color-dark: var(--ms-text);
+  --text-color-light: #ffffff;
+  --card-background: rgba(255, 255, 255, 0.97);
+  --card-border: rgba(15, 23, 42, 0.06);
+  --card-shadow: rgba(15, 23, 42, 0.06);
+
+  /* Slightly lighter slate so nav text (forced light below) reads clearly */
+  --sidebar-bg: linear-gradient(180deg, #1e293b 0%, #334155 100%);
+  --toolbar-bg: linear-gradient(90deg, #ffffff 0%, #f8fafc 100%);
+  --font-family-primary: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-family-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family-primary);
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(165deg, #f1f5f9 0%, #e8f0f6 45%, #f8fafc 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: var(--text-color-dark);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-color-dark);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+
+.card-container {
+  padding: 20px;
+}
+
+mat-card {
+  background: var(--card-background) !important;
+  backdrop-filter: blur(12px);
+  border-radius: 14px !important;
+  box-shadow: 0 4px 24px var(--card-shadow) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+.data-table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+button[mat-raised-button][color="primary"] {
+  background: linear-gradient(180deg, var(--ms-primary) 0%, var(--ms-primary-dark) 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+}
+
+button[mat-raised-button][color="primary"]:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4) !important;
+  filter: brightness(1.03);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: var(--font-family-heading);
+  color: var(--ms-text);
+  letter-spacing: -0.03em;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 0 4px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.form-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-field {
+  flex: 1;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
+
+::ng-deep .mat-mdc-form-field {
+  --mdc-filled-text-field-container-color: var(--card-background);
+  --mdc-outlined-text-field-container-color: var(--card-background);
+}
+
+::ng-deep .mat-mdc-button.mat-primary {
+  --mdc-text-button-label-text-color: var(--ms-primary);
+}
+
+::ng-deep .mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: var(--ms-primary);
+  --mdc-protected-button-label-text-color: white;
+}
+
+::ng-deep .mat-mdc-tab-group {
+  --mdc-tab-indicator-active-indicator-color: var(--ms-primary);
+  --mat-tab-header-active-label-text-color: var(--ms-primary);
+  --mat-tab-header-active-ripple-color: var(--ms-primary);
+  --mat-tab-header-inactive-label-text-color: rgba(0, 0, 0, 0.55);
+}
+
+::ng-deep .mat-mdc-checkbox {
+  --mdc-checkbox-selected-checkmark-color: white;
+  --mdc-checkbox-selected-focus-icon-color: var(--ms-primary);
+  --mdc-checkbox-selected-hover-icon-color: var(--ms-primary);
+  --mdc-checkbox-selected-icon-color: var(--ms-primary);
+  --mdc-checkbox-selected-pressed-icon-color: var(--ms-primary);
+}
+
+::ng-deep .mat-mdc-select {
+  --mat-select-enabled-trigger-text-color: var(--text-color-dark);
+}
+
+::ng-deep .mat-mdc-option.mdc-list-item--selected .mdc-list-item__primary-text {
+  color: var(--ms-primary);
+}
+
+/* POS invoice print dialog — panel above overlay */
+.invoice-print-dialog-panel .mat-mdc-dialog-container {
+  padding: 0;
+  overflow: auto;
+}

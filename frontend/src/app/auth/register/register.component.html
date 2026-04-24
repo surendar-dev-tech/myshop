@@ -1,0 +1,94 @@
+<div class="login-page">
+  <div class="login-backdrop" aria-hidden="true"></div>
+  <mat-card class="login-card register-card">
+    <div class="login-brand">
+      <div class="login-logo">MS</div>
+      <h1>Create account</h1>
+      <p class="login-lead">Register a new company workspace. Your products, sales, and customers are private to your business.</p>
+    </div>
+    <mat-card-content>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Company / shop name</mat-label>
+          <input matInput formControlName="companyName" required autocomplete="organization" placeholder="Your business name">
+          <mat-hint>Creates a separate workspace — your data stays private to this business</mat-hint>
+          <mat-error *ngIf="registerForm.get('companyName')?.hasError('required')">
+            Company name is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Full name</mat-label>
+          <input matInput formControlName="fullName" required autocomplete="name">
+          <mat-error *ngIf="registerForm.get('fullName')?.hasError('required')">
+            Name is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" required autocomplete="username" minlength="3">
+          <mat-error *ngIf="registerForm.get('username')?.hasError('required')">
+            Username is required
+          </mat-error>
+          <mat-error *ngIf="registerForm.get('username')?.hasError('minlength')">
+            At least 3 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email (optional)</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email">
+          <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+            Enter a valid email
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="phone" required autocomplete="tel">
+          <mat-error *ngIf="registerForm.get('phone')?.hasError('required')">
+            Phone is required
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" required autocomplete="new-password" minlength="6">
+          <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
+            At least 6 characters
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirm password</mat-label>
+          <input matInput type="password" formControlName="confirmPassword" required autocomplete="new-password">
+          <mat-error *ngIf="registerForm.get('confirmPassword')?.hasError('required')">
+            Confirm your password
+          </mat-error>
+          <mat-error *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched">
+            Passwords do not match
+          </mat-error>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="registerForm.invalid || loading"
+          class="full-width login-submit"
+        >
+          {{ loading ? 'Creating account…' : 'Create account' }}
+        </button>
+
+        <p class="login-footer">
+          Already have an account?
+          <a routerLink="/login">Sign in</a>
+        </p>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

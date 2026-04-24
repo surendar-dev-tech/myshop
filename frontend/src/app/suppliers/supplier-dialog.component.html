@@ -1,0 +1,79 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ isEditMode ? 'edit' : 'add' }}</mat-icon>
+  {{ isEditMode ? 'Edit Supplier' : 'Add Supplier' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="supplierForm" class="supplier-form">
+    <div class="form-row">
+      <mat-form-field class="full-width">
+        <mat-label>Supplier Name *</mat-label>
+        <input matInput formControlName="name" placeholder="Enter supplier name">
+        <mat-error *ngIf="supplierForm.get('name')?.hasError('required')">
+          Supplier name is required
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field class="half-width">
+        <mat-label>Contact Person</mat-label>
+        <input matInput formControlName="contactPerson" placeholder="Contact person name">
+      </mat-form-field>
+
+      <mat-form-field class="half-width">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone" placeholder="Phone number">
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="Email address">
+        <mat-error *ngIf="supplierForm.get('email')?.hasError('email')">
+          Invalid email format
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field class="full-width">
+        <mat-label>Address</mat-label>
+        <textarea matInput formControlName="address" rows="3" placeholder="Supplier address"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field class="half-width">
+        <mat-label>GST Number</mat-label>
+        <input matInput formControlName="gstNumber" placeholder="GST number">
+      </mat-form-field>
+
+      <mat-form-field class="half-width">
+        <mat-label>PAN Number</mat-label>
+        <input matInput formControlName="panNumber" placeholder="PAN number">
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-checkbox formControlName="active">Active</mat-checkbox>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="supplierForm.invalid">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>
+
+
+
+
+
+
+
+
+

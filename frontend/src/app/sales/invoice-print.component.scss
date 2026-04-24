@@ -1,0 +1,383 @@
+.invoice-container {
+  width: 210mm; /* A4 width */
+  min-height: 297mm; /* A4 height */
+  margin: 0 auto;
+  padding: 15mm; /* Standard A4 margins */
+  background: white;
+  box-sizing: border-box;
+}
+
+/* Template Styles */
+.invoice-template-default {
+  // Default template styles (current)
+}
+
+.invoice-template-modern {
+  .invoice-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    
+    h1 {
+      color: white;
+    }
+    
+    .store-info {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+  
+  .invoice-table {
+    thead {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+    }
+  }
+}
+
+.invoice-template-minimal {
+  .invoice-header {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 300;
+    }
+  }
+  
+  .invoice-table {
+    thead {
+      background: transparent;
+      border-bottom: 2px solid #333;
+    }
+  }
+}
+
+.invoice-template-classic {
+  .invoice-header {
+    border: 2px solid #333;
+    padding: 20px;
+    background: #f9f9f9;
+    
+    h1 {
+      font-family: 'Times New Roman', serif;
+      font-size: 28px;
+    }
+  }
+  
+  .invoice-table {
+    border: 1px solid #333;
+    
+    th, td {
+      border: 1px solid #ddd;
+    }
+  }
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.shop-logo {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+.custom-header,
+.custom-footer {
+  margin: 10px 0;
+  padding: 10px;
+}
+
+.custom-header {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.custom-footer {
+  border-top: 1px solid #ddd;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.invoice-header {
+  text-align: center;
+  border-bottom: 2px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.invoice-header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #333;
+}
+
+.store-info {
+  margin: 4px 0;
+  color: #666;
+}
+
+.invoice-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.invoice-info,
+.customer-info {
+  flex: 1;
+}
+
+.invoice-info p,
+.customer-info p {
+  margin: 4px 0;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+.invoice-table thead {
+  background-color: #f5f5f5;
+}
+
+.invoice-table th,
+.invoice-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.invoice-table th {
+  font-weight: 600;
+}
+
+.invoice-table-gst {
+  font-size: 11px;
+
+  th,
+  td {
+    padding: 4px 2px;
+    font-size: 11px;
+  }
+}
+
+.invoice-summary {
+  border-top: 2px solid #333;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.summary-row.total {
+  border-top: 1px solid #ddd;
+  padding-top: 8px;
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.payment-info {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ddd;
+}
+
+.credit-note {
+  color: #f44336;
+  font-weight: 500;
+}
+
+.invoice-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+  color: #666;
+}
+
+.footer-note {
+  font-size: 12px;
+  color: #999;
+}
+
+.invoice-actions {
+  margin-top: 20px;
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+.invoice-browser-print-note {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  max-width: 52ch;
+}
+
+/* ===== COMMON PRINT SETTINGS ===== */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+    font-family: 'Roboto', Arial, sans-serif;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .invoice-container {
+    box-shadow: none;
+    page-break-after: avoid;
+  }
+  
+  .invoice-header,
+  .invoice-table,
+  .invoice-summary,
+  .custom-header,
+  .custom-footer,
+  .logo-section {
+    page-break-inside: avoid;
+  }
+}
+
+/* ===== POS RECEIPT (80mm) ===== */
+@media print {
+  body.pos,
+  .print-mode-pos {
+    width: 80mm;
+    font-size: 11px;
+  }
+  
+  @page {
+    size: 80mm auto;
+    margin: 5mm;
+  }
+  
+  .print-mode-pos .invoice-container {
+    width: 80mm;
+    min-height: auto;
+    margin: 0;
+    padding: 5mm;
+  }
+  
+  .print-mode-pos .invoice-header h1 {
+    font-size: 18px;
+  }
+  
+  .print-mode-pos .store-info {
+    font-size: 10px;
+  }
+  
+  .print-mode-pos .invoice-table {
+    font-size: 10px;
+  }
+  
+  .print-mode-pos .invoice-table th,
+  .print-mode-pos .invoice-table td {
+    padding: 4px;
+    font-size: 10px;
+  }
+  
+  .print-mode-pos .invoice-footer {
+    font-size: 9px;
+  }
+}
+
+/* ===== A5 (Half A4) ===== */
+@media print {
+  body.a5,
+  .print-mode-a5 {
+    width: 148mm;
+    height: 210mm;
+  }
+  
+  @page {
+    size: A5;
+    margin: 10mm;
+  }
+  
+  .print-mode-a5 .invoice-container {
+    width: 148mm;
+    min-height: 210mm;
+    margin: 0;
+    padding: 10mm;
+  }
+  
+  .print-mode-a5 .invoice-header h1 {
+    font-size: 24px;
+  }
+  
+  .print-mode-a5 .invoice-table {
+    font-size: 11px;
+  }
+  
+  .print-mode-a5 .invoice-table th,
+  .print-mode-a5 .invoice-table td {
+    padding: 6px;
+    font-size: 11px;
+  }
+}
+
+/* ===== A4 (Full Page) ===== */
+@media print {
+  body.a4,
+  .print-mode-a4 {
+    width: 210mm;
+    height: 297mm;
+  }
+  
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  
+  .print-mode-a4 .invoice-container {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    padding: 15mm;
+  }
+  
+  .print-mode-a4 .invoice-header h1 {
+    font-size: 32px;
+  }
+  
+  .print-mode-a4 .invoice-table {
+    font-size: 13px;
+  }
+  
+  .print-mode-a4 .invoice-table th,
+  .print-mode-a4 .invoice-table td {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+

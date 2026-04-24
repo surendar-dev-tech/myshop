@@ -1,0 +1,28 @@
+.customer-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 500px;
+  padding-top: 20px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+}
+
+
+
+
+
+
+
+
+

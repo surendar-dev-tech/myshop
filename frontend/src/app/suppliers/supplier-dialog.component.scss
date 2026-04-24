@@ -1,0 +1,46 @@
+.supplier-form {
+  min-width: 500px;
+  padding: 16px 0;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.half-width {
+  flex: 1;
+}
+
+::ng-deep .mat-dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+::ng-deep .mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+::ng-deep .mat-dialog-actions {
+  padding: 16px 0 0 0;
+  margin: 0;
+}
+
+
+
+
+
+
+
+
+

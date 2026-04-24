@@ -1,0 +1,90 @@
+<div class="credits-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Credits (Udhaar)</h1>
+      <p class="page-subtitle">
+        View-only: outstanding balances by customer and overall total.
+        To record a payment against account credit, use
+        <a routerLink="/invoices">Invoices</a> → <strong>Record payment</strong>.
+      </p>
+    </div>
+    <button mat-raised-button color="primary" (click)="loadOutstandingCredits()" [disabled]="isLoading">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </div>
+
+  <div class="credits-summary" *ngIf="!isLoading && creditsDataSource.data.length > 0">
+    <mat-icon>summarize</mat-icon>
+    <div>
+      <span class="credits-summary-label">Total outstanding (all customers)</span>
+      <span class="credits-summary-value">{{ totalOutstanding | currency:'INR':'symbol':'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <mat-card class="credits-card">
+    <mat-card-header>
+      <mat-card-title>By customer</mat-card-title>
+      <mat-card-subtitle>Sorted by name — view history only</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading credits...</p>
+      </div>
+
+      <table 
+        *ngIf="!isLoading" 
+        mat-table 
+        [dataSource]="creditsDataSource" 
+        class="credits-table">
+        
+        <!-- Customer Name Column -->
+        <ng-container matColumnDef="customerName">
+          <th mat-header-cell *matHeaderCellDef>Customer Name</th>
+          <td mat-cell *matCellDef="let credit">{{ credit.customerName }}</td>
+        </ng-container>
+
+        <!-- Phone Column -->
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef>Phone</th>
+          <td mat-cell *matCellDef="let credit">{{ credit.customerPhone || 'N/A' }}</td>
+        </ng-container>
+
+        <!-- Outstanding Balance Column -->
+        <ng-container matColumnDef="outstandingBalance">
+          <th mat-header-cell *matHeaderCellDef>Outstanding Balance</th>
+          <td mat-cell *matCellDef="let credit">
+            <span class="balance-amount">{{ credit.outstandingBalance | currency:'INR':'symbol':'1.2-2' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Details</th>
+          <td mat-cell *matCellDef="let credit">
+            <button
+              mat-stroked-button
+              color="primary"
+              type="button"
+              (click)="viewHistory(credit.customerId)"
+              class="action-button">
+              <mat-icon>history</mat-icon>
+              View history
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div *ngIf="!isLoading && creditsDataSource.data.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">account_balance_wallet</mat-icon>
+        <h3>No Outstanding Credits</h3>
+        <p>All customers have cleared their dues.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+

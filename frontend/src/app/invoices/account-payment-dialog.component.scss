@@ -1,0 +1,82 @@
+.payment-dialog-content {
+  min-width: 400px;
+  padding: 8px 0 0;
+}
+
+.dialog-lead {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+  margin: 0 0 16px;
+  max-width: 56ch;
+}
+
+.loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  color: #64748b;
+}
+
+.empty-customers {
+  text-align: center;
+  padding: 24px 12px;
+  color: #64748b;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.customer-info {
+  background-color: #f8fafc;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+
+  p {
+    margin: 6px 0;
+    color: #334155;
+    font-size: 14px;
+  }
+}
+
+.opt-bal {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.inline-spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}

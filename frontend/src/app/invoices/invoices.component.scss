@@ -1,0 +1,89 @@
+.inv-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 8px 24px;
+}
+
+.inv-header {
+  margin-bottom: 20px;
+}
+
+.inv-header-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.inv-record-pay mat-icon {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.inv-title {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ms-text);
+}
+
+.inv-lead {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--ms-text-secondary);
+  max-width: 60ch;
+  line-height: 1.45;
+}
+
+.inv-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.07);
+}
+
+.inv-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.inv-empty {
+  padding: 24px;
+  color: var(--ms-text-secondary);
+  a {
+    color: var(--ms-primary);
+    font-weight: 600;
+  }
+}
+
+.inv-table-wrap {
+  overflow-x: auto;
+}
+
+.inv-table {
+  width: 100%;
+  min-width: 720px;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions-col {
+  width: 132px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.inv-action-btn mat-icon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.inline-spin {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+}

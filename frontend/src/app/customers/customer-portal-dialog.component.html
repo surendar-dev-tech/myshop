@@ -1,0 +1,58 @@
+<h2 mat-dialog-title>Online ordering access</h2>
+<mat-dialog-content>
+  <p class="lead">
+    <strong>{{ customer.name }}</strong>
+    <span *ngIf="customer.phone"> · {{ customer.phone }}</span>
+  </p>
+  <p class="hint" *ngIf="!hasPortal">
+    Set a username and password the customer will use to sign in. They will only see products for your shop.
+  </p>
+  <p class="hint" *ngIf="hasPortal">
+    Customer signs in with username <strong>{{ customer.portalUsername }}</strong>. You can reset the password or remove access.
+  </p>
+
+  <form *ngIf="!hasPortal" [formGroup]="createForm" (ngSubmit)="createSubmit()">
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Username</mat-label>
+      <input matInput formControlName="username" autocomplete="off" />
+      <mat-error *ngIf="createForm.get('username')?.hasError('required')">Required</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password" autocomplete="new-password" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full">
+      <mat-label>Confirm password</mat-label>
+      <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password" />
+    </mat-form-field>
+    <mat-error *ngIf="createForm.hasError('mismatch')" class="error-inline">Passwords must match</mat-error>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="close()" [disabled]="busy">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="busy || createForm.invalid">
+        Create access
+      </button>
+    </mat-dialog-actions>
+  </form>
+
+  <div *ngIf="hasPortal">
+    <form [formGroup]="resetForm" (ngSubmit)="resetSubmit()">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>New password</mat-label>
+        <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Confirm new password</mat-label>
+        <input matInput type="password" formControlName="confirmNewPassword" autocomplete="new-password" />
+      </mat-form-field>
+      <mat-dialog-actions align="end">
+        <button mat-button type="button" (click)="close()" [disabled]="busy">Close</button>
+        <button mat-stroked-button color="warn" type="button" (click)="revoke()" [disabled]="busy">
+          Remove access
+        </button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="busy || resetForm.invalid">
+          Update password
+        </button>
+      </mat-dialog-actions>
+    </form>
+  </div>
+</mat-dialog-content>

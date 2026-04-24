@@ -1,0 +1,96 @@
+.customers-container {
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  color: #333;
+}
+
+.add-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customers-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.customers-table {
+  width: 100%;
+}
+
+.has-balance {
+  color: #f44336;
+  font-weight: 500;
+}
+
+.no-balance {
+  color: #4caf50;
+}
+
+.portal-on {
+  font-size: 13px;
+  color: #0d9488;
+}
+
+.portal-off {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #666;
+}
+
+
+
+
+
+
+
+
+

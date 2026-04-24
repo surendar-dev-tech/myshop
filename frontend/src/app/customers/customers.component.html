@@ -1,0 +1,122 @@
+<div class="customers-container">
+  <div class="page-header">
+    <h1 class="page-title">Customers</h1>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      (click)="openAddCustomerDialog()"
+      class="add-button">
+      <mat-icon>add</mat-icon>
+      Add Customer
+    </button>
+  </div>
+
+  <mat-card class="customers-card">
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading customers...</p>
+      </div>
+
+      <table 
+        *ngIf="!isLoading" 
+        mat-table 
+        [dataSource]="customersDataSource" 
+        class="customers-table">
+        
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Customer Name</th>
+          <td mat-cell *matCellDef="let customer">{{ customer.name }}</td>
+        </ng-container>
+
+        <!-- Phone Column -->
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef>Phone</th>
+          <td mat-cell *matCellDef="let customer">{{ customer.phone || 'N/A' }}</td>
+        </ng-container>
+
+        <!-- Email Column -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let customer">{{ customer.email || 'N/A' }}</td>
+        </ng-container>
+
+        <!-- Outstanding Balance Column -->
+        <ng-container matColumnDef="outstandingBalance">
+          <th mat-header-cell *matHeaderCellDef>Outstanding Balance</th>
+          <td mat-cell *matCellDef="let customer">
+            <span 
+              [class.has-balance]="customer.outstandingBalance && customer.outstandingBalance > 0"
+              [class.no-balance]="!customer.outstandingBalance || customer.outstandingBalance === 0">
+              {{ customer.outstandingBalance || 0 | currency:'INR':'symbol':'1.2-2' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="onlineOrdering">
+          <th mat-header-cell *matHeaderCellDef>Online ordering</th>
+          <td mat-cell *matCellDef="let customer">
+            <span *ngIf="customer.onlineOrderingEnabled" class="portal-on">
+              Yes · {{ customer.portalUsername }}
+            </span>
+            <span *ngIf="!customer.onlineOrderingEnabled" class="portal-off">No</span>
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let customer">
+            <button
+              *ngIf="isAdmin"
+              mat-icon-button
+              (click)="openSpecialPricesDialog(customer)"
+              matTooltip="Custom prices for this customer">
+              <mat-icon>price_change</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="accent"
+              (click)="openPortalDialog(customer)"
+              matTooltip="Online ordering login">
+              <mat-icon>shopping_bag</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              color="primary" 
+              (click)="openEditCustomerDialog(customer)"
+              matTooltip="Edit Customer">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button 
+              mat-icon-button 
+              color="warn" 
+              (click)="deleteCustomer(customer.id!)"
+              matTooltip="Delete Customer">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div *ngIf="!isLoading && customersDataSource.data.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">people</mat-icon>
+        <h3>No Customers Found</h3>
+        <p>Click "Add Customer" to create your first customer.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+
+
+
+
+
+
+
+

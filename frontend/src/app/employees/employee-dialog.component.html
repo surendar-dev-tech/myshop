@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit employee' : 'Add employee' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="employee-form">
+    <mat-form-field class="full-width">
+      <mat-label>Username</mat-label>
+      <input matInput formControlName="username" autocomplete="username" [readonly]="isEditMode" />
+      <mat-hint *ngIf="!isEditMode">Unique login for this shop</mat-hint>
+      <mat-error *ngIf="form.get('username')?.hasError('required')">Username is required</mat-error>
+      <mat-error *ngIf="form.get('username')?.hasError('minlength')">At least 3 characters</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full-width" *ngIf="!isEditMode">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password" autocomplete="new-password" />
+      <mat-error *ngIf="form.get('password')?.hasError('required')">Password is required</mat-error>
+      <mat-error *ngIf="form.get('password')?.hasError('minlength')">At least 6 characters</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Full name</mat-label>
+      <input matInput formControlName="fullName" />
+      <mat-error *ngIf="form.get('fullName')?.hasError('required')">Name is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Phone</mat-label>
+      <input matInput formControlName="phone" type="tel" />
+      <mat-error *ngIf="form.get('phone')?.hasError('required')">Phone is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" />
+      <mat-error *ngIf="form.get('email')?.hasError('email')">Invalid email</mat-error>
+    </mat-form-field>
+
+    <div class="toggle-row" *ngIf="isEditMode">
+      <mat-slide-toggle formControlName="active">Account active</mat-slide-toggle>
+      <p class="toggle-hint">Inactive users cannot sign in.</p>
+    </div>
+
+    <mat-form-field class="full-width" *ngIf="isEditMode">
+      <mat-label>New password (optional)</mat-label>
+      <input matInput type="password" formControlName="newPassword" autocomplete="new-password" />
+      <mat-hint>Leave blank to keep current password</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="form.invalid || isLoading">
+    <mat-icon *ngIf="isLoading">hourglass_empty</mat-icon>
+    {{ isLoading ? 'Saving...' : 'Save' }}
+  </button>
+</mat-dialog-actions>

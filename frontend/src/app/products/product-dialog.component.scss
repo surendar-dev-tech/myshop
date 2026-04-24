@@ -1,0 +1,56 @@
+.product-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 500px;
+  padding-top: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-field {
+  flex: 1;
+}
+
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.category-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.category-select {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.category-add-btn {
+  flex: 0 0 auto;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+}
+
+
+
+
+
+
+
+
+

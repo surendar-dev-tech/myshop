@@ -1,0 +1,21 @@
+.employee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.toggle-row {
+  margin: 8px 0 16px;
+}
+
+.toggle-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}

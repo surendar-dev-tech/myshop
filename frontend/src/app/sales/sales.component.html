@@ -1,0 +1,245 @@
+<div class="pos-page">
+  <header class="pos-header-row">
+    <div class="pos-header-copy">
+      <h1 class="pos-title">Point of Sale</h1>
+      <p class="pos-subtitle">
+        Customer and payment mode on top — line items in the middle — total at the bottom.
+        After you pick a product, focus moves to Qty; press <kbd>Enter</kbd> there to add the next line.
+        <kbd>End</kbd> completes the sale (same as the button); press <kbd>End</kbd> again to reprint the last invoice.
+      </p>
+      <div *ngIf="prefillOrderLabel" class="pos-prefill-banner" role="status">
+        <mat-icon>shopping_bag</mat-icon>
+        <span
+          >Online order <strong>{{ prefillOrderLabel }}</strong> — review the lines, then click
+          <strong>Complete sale</strong> to create the invoice.</span
+        >
+      </div>
+    </div>
+  </header>
+
+  <form [formGroup]="saleForm" (ngSubmit)="createSale()" class="pos-form">
+    <div class="pos-main-stack">
+      <section class="pos-single-sale-card" aria-label="Point of sale sale">
+        <!-- Top: customer + payment mode -->
+        <div class="pos-card-block pos-card-block--top">
+          <div class="pos-top-row">
+            <mat-form-field appearance="outline" class="pos-top-field customer-field">
+              <mat-label>Customer</mat-label>
+              <input
+                matInput
+                type="text"
+                [matAutocomplete]="customerAuto"
+                formControlName="customerSearch"
+                placeholder="Optional — search name or phone…"
+                (input)="onCustomerSearch()">
+              <mat-autocomplete
+                #customerAuto="matAutocomplete"
+                [displayWith]="displayCustomer"
+                (optionSelected)="onCustomerSelected($event)">
+                <mat-option [value]="null">Walk-in</mat-option>
+                <mat-option *ngFor="let customer of filteredCustomers" [value]="customer">
+                  {{ customer.name }} — {{ customer.phone || 'No phone' }}
+                </mat-option>
+              </mat-autocomplete>
+              <mat-icon matSuffix>person_search</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="pos-top-field">
+              <mat-label>Payment mode</mat-label>
+              <mat-select formControlName="paymentMode" (selectionChange)="onPaymentModeSelect($event)">
+                <mat-option value="CASH">Cash</mat-option>
+                <mat-option value="UPI">UPI</mat-option>
+                <mat-option value="CARD">Card</mat-option>
+                <mat-option value="CREDIT">Credit</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <p class="pos-credit-hint" *ngIf="saleForm.get('paymentMode')?.value === 'CREDIT'">
+            <mat-icon class="pos-credit-hint-icon">info</mat-icon>
+            Credit details were confirmed in the pop-up. Switch away from Credit to change payment type.
+          </p>
+
+          <div
+            *ngIf="isCreditSaleForm() && selectedCustomer"
+            class="info-banner balance-banner balance-banner--compact">
+            <mat-icon>account_balance</mat-icon>
+            <span><strong>Previous balance:</strong> {{ selectedCustomerBalance | currency:'INR' }}</span>
+          </div>
+        </div>
+
+        <div class="pos-card-divider" role="presentation"></div>
+
+        <!-- Line items -->
+        <div class="pos-card-block pos-card-block--lines">
+          <div class="pos-table-panel-head">
+            <h2 class="pos-table-title">Line items</h2>
+            <span class="pos-line-badge">{{ items.length }} line{{ items.length === 1 ? '' : 's' }}</span>
+          </div>
+
+          <div class="pos-table-scroll">
+            <table class="pos-lines-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th class="col-product">Line item</th>
+                  <th class="col-qty">Qty</th>
+                  <th class="col-price">Unit</th>
+                  <th class="col-line">Amount</th>
+                  <th class="col-action" aria-label="Actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container formArrayName="items">
+                  <tr *ngFor="let row of items.controls; let i = index" [formGroupName]="i" class="pos-line-row">
+                    <td class="col-num">{{ i + 1 }}</td>
+                    <td class="col-product">
+                      <mat-form-field appearance="outline" class="pos-cell-field" subscriptSizing="dynamic">
+                        <input
+                          #lineProductInput
+                          matInput
+                          type="text"
+                          [matAutocomplete]="productAuto"
+                          [formControl]="getProductControl(i)"
+                          placeholder="Search name, barcode…"
+                          (input)="onProductSearch(i)"
+                          (focus)="onProductSearch(i)">
+                        <mat-autocomplete
+                          #productAuto="matAutocomplete"
+                          [displayWith]="displayProduct"
+                          (optionSelected)="onProductSelected(i, $event)">
+                          <mat-option *ngFor="let product of getFilteredProducts(i)" [value]="product">
+                            <div class="product-option">
+                              <span class="product-name">{{ product.name || 'Unknown' }}</span>
+                              <span class="product-meta">
+                                <span>{{ product.barcode || '—' }}</span>
+                                <span class="catalog-price">{{ getEffectiveCatalogDisplayPrice(product) | currency:'INR' }}</span>
+                                <span class="stock" [class.low-stock]="getProductStock(product.id) <= 10">
+                                  Stock {{ getProductStock(product.id) }}
+                                </span>
+                              </span>
+                            </div>
+                          </mat-option>
+                        </mat-autocomplete>
+                      </mat-form-field>
+                    </td>
+                    <td class="col-qty">
+                      <mat-form-field appearance="outline" class="pos-cell-field pos-cell-field--narrow" subscriptSizing="dynamic">
+                        <input
+                          #lineQtyInput
+                          matInput
+                          type="number"
+                          formControlName="quantity"
+                          min="0.01"
+                          step="0.01"
+                          (input)="calculateItemTotal(i)"
+                          (keydown)="onQtyKeydown(i, $event)">
+                      </mat-form-field>
+                    </td>
+                    <td class="col-price">
+                      <mat-form-field appearance="outline" class="pos-cell-field pos-cell-field--narrow" subscriptSizing="dynamic">
+                        <input
+                          matInput
+                          type="number"
+                          formControlName="unitPrice"
+                          min="0"
+                          step="0.01"
+                          (input)="calculateItemTotal(i)">
+                      </mat-form-field>
+                    </td>
+                    <td class="col-line">
+                      <span class="pos-line-amount">{{ getItemTotal(i) | currency:'INR' }}</span>
+                    </td>
+                    <td class="col-action">
+                      <button
+                        mat-icon-button
+                        type="button"
+                        (click)="removeItem(i)"
+                        color="warn"
+                        aria-label="Remove line">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+
+          <button mat-stroked-button type="button" (click)="addItem()" class="pos-add-row-btn" color="primary">
+            <mat-icon>add</mat-icon>
+            Add line
+          </button>
+        </div>
+
+        <div class="pos-card-divider" role="presentation"></div>
+
+        <!-- Bottom: discount + total + complete -->
+        <div class="pos-card-block pos-card-block--payment" aria-label="Totals">
+          <div class="pos-discount-row">
+            <mat-form-field appearance="outline" class="pos-discount-field">
+              <mat-label>Bill discount</mat-label>
+              <input matInput type="number" formControlName="discount" min="0" step="0.01" (input)="calculateTotal()">
+            </mat-form-field>
+          </div>
+
+          <p class="pos-total-formula">
+            Total amount = sum of line amounts − bill discount
+          </p>
+
+          <div
+            class="grand-total-bar grand-total-bar--footer"
+            [class.grand-total-bar--credit]="isCreditSaleForm()">
+            <div class="grand-total-bar__amounts">
+              <ng-container *ngIf="!isCreditSaleForm(); else creditTotals">
+                <div>
+                  <span class="grand-label">Total amount</span>
+                  <span class="grand-value">{{ getGrandTotal() | currency:'INR' }}</span>
+                </div>
+              </ng-container>
+              <ng-template #creditTotals>
+                <div class="credit-checkout-totals">
+                  <div class="credit-invoice-total">
+                    <span class="grand-label">Invoice total</span>
+                    <span class="grand-value grand-value--invoice">{{ getGrandTotal() | currency:'INR' }}</span>
+                  </div>
+                  <div class="credit-pay-now">
+                    <span class="grand-label">Pay now</span>
+                    <span class="grand-value">{{ getPayNowAmount() | currency:'INR' }}</span>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="complete-btn"
+              [disabled]="saleForm.invalid || items.length === 0">
+              <mat-icon>check_circle</mat-icon>
+              Complete sale
+            </button>
+          </div>
+
+          <p class="pos-invoice-hint">
+            <mat-icon aria-hidden="true">receipt</mat-icon>
+            After <strong>Complete sale</strong>, a printable invoice opens. Use <strong>Print last invoice</strong> below if you closed it.
+          </p>
+
+          <div class="pos-print-last" *ngIf="lastInvoiceData">
+            <button
+              mat-stroked-button
+              type="button"
+              class="pos-print-last-btn"
+              color="primary"
+              (click)="reprintLastInvoice()">
+              <mat-icon>print</mat-icon>
+              Print last invoice
+            </button>
+            <span class="pos-print-last-meta">{{ lastInvoiceData.invoiceNumber }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,153 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ isViewMode ? 'visibility' : 'add_shopping_cart' }}</mat-icon>
+  {{ isViewMode ? 'Purchase Order Details' : 'New Purchase Order' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="purchaseForm" class="purchase-form">
+    <div class="form-section">
+      <h3>Supplier Information</h3>
+      <mat-form-field class="full-width">
+        <mat-label>Supplier (Optional)</mat-label>
+        <input 
+          matInput 
+          type="text"
+          [matAutocomplete]="supplierAuto"
+          formControlName="supplierSearch"
+          placeholder="Search supplier..."
+          (input)="onSupplierSearch()"
+          [readonly]="isViewMode">
+        <mat-autocomplete 
+          #supplierAuto="matAutocomplete" 
+          [displayWith]="displaySupplier"
+          (optionSelected)="onSupplierSelected($event)">
+          <mat-option [value]="null">No Supplier</mat-option>
+          <mat-option *ngFor="let supplier of filteredSuppliers" [value]="supplier">
+            {{ supplier.name }} - {{ supplier.phone || 'No phone' }}
+          </mat-option>
+        </mat-autocomplete>
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field class="half-width">
+          <mat-label>Purchase Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="purchaseDate" [readonly]="isViewMode">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field class="half-width">
+          <mat-label>Payment Status *</mat-label>
+          <mat-select formControlName="paymentStatus" [disabled]="isViewMode">
+            <mat-option value="PAID">Paid</mat-option>
+            <mat-option value="PARTIAL">Partial</mat-option>
+            <mat-option value="PENDING">Pending</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Purchase Items</h3>
+      <div formArrayName="items">
+        <div *ngFor="let item of items.controls; let i = index" class="purchase-item-wrapper">
+          <div [formGroupName]="i" class="purchase-item">
+            <mat-form-field class="product-field">
+              <mat-label>Product</mat-label>
+              <input 
+                matInput 
+                type="text"
+                [matAutocomplete]="productAuto"
+                [formControl]="getProductControl(i)"
+                placeholder="Search product..."
+                (input)="onProductSearch(i)"
+                [readonly]="isViewMode">
+              <mat-autocomplete 
+                #productAuto="matAutocomplete" 
+                [displayWith]="displayProduct"
+                (optionSelected)="onProductSelected(i, $event)">
+                <mat-option *ngFor="let product of getFilteredProducts(i)" [value]="product">
+                  {{ product.name }} ({{ product.barcode }}) - ₹{{ product.purchasePrice }}
+                </mat-option>
+              </mat-autocomplete>
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field class="quantity-field">
+              <mat-label>Qty</mat-label>
+              <input matInput type="number" formControlName="quantity" (change)="calculateItemTotal(i)" [readonly]="isViewMode">
+            </mat-form-field>
+
+            <mat-form-field class="price-field">
+              <mat-label>Unit Price</mat-label>
+              <input matInput type="number" formControlName="unitPrice" (change)="calculateItemTotal(i)" [readonly]="isViewMode">
+            </mat-form-field>
+
+            <mat-form-field class="discount-field">
+              <mat-label>Discount</mat-label>
+              <input matInput type="number" formControlName="discount" (change)="calculateItemTotal(i)" [readonly]="isViewMode">
+            </mat-form-field>
+
+            <mat-form-field class="total-field">
+              <mat-label>Total</mat-label>
+              <input matInput type="number" [value]="getItemTotal(i)" readonly>
+            </mat-form-field>
+
+            <button *ngIf="!isViewMode" mat-icon-button type="button" (click)="removeItem(i)" color="warn">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          
+          <!-- Batch and Expiry fields row -->
+          <div [formGroupName]="i" class="purchase-item-extra">
+            <mat-form-field class="batch-field">
+              <mat-label>Batch Number</mat-label>
+              <input matInput formControlName="batchNumber" placeholder="Optional" [readonly]="isViewMode">
+            </mat-form-field>
+
+            <mat-form-field class="expiry-field">
+              <mat-label>Expiry Date</mat-label>
+              <input matInput [matDatepicker]="expiryPicker" formControlName="expiryDate" [readonly]="isViewMode">
+              <mat-datepicker-toggle matSuffix [for]="expiryPicker"></mat-datepicker-toggle>
+              <mat-datepicker #expiryPicker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <button *ngIf="!isViewMode" mat-button type="button" (click)="addItem()" class="add-item-btn">
+        <mat-icon>add</mat-icon>
+        Add Item
+      </button>
+    </div>
+
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field class="half-width">
+          <mat-label>Discount</mat-label>
+          <input matInput type="number" formControlName="discount" (change)="calculateTotal()" [readonly]="isViewMode">
+        </mat-form-field>
+
+        <div class="total-display">
+          <strong>Grand Total: {{ getGrandTotal() | currency:'INR' }}</strong>
+        </div>
+      </div>
+
+      <mat-form-field class="full-width">
+        <mat-label>Notes</mat-label>
+        <textarea matInput formControlName="notes" rows="3" [readonly]="isViewMode"></textarea>
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">{{ isViewMode ? 'Close' : 'Cancel' }}</button>
+  <button *ngIf="!isViewMode" mat-raised-button color="primary" (click)="onSave()" [disabled]="purchaseForm.invalid || items.length === 0">
+    Create Purchase
+  </button>
+</mat-dialog-actions>
+

@@ -1,0 +1,83 @@
+<div class="shop-page">
+  <mat-toolbar color="primary" class="shop-toolbar">
+    <span class="toolbar-title">{{ shopDisplayName || companyName }}</span>
+    <span class="spacer"></span>
+    <span class="toolbar-hint">Ordering as {{ authService.getCurrentUser()?.username }}</span>
+    <button mat-icon-button type="button" (click)="logout()" aria-label="Logout">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div class="shop-body">
+    <div *ngIf="loading" class="loading-wrap">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div class="catalog" *ngIf="!loading">
+      <h2 class="section-title">Products</h2>
+      <div class="product-grid">
+        <mat-card class="product-card" *ngFor="let p of products">
+          <mat-card-content>
+            <h3>{{ p.name }}</h3>
+            <p class="desc" *ngIf="p.description">{{ p.description }}</p>
+            <p class="meta">
+              <span class="price">{{ p.sellingPrice | currency:'INR':'symbol':'1.0-2' }}</span>
+              <span class="unit" *ngIf="p.unit">/ {{ p.unit }}</span>
+            </p>
+            <p class="stock" *ngIf="p.currentStock != null">In stock: {{ p.currentStock }}</p>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-raised-button color="primary" type="button" (click)="addToCart(p)">
+              <mat-icon>add_shopping_cart</mat-icon>
+              Add
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+      <p class="empty-catalog" *ngIf="products.length === 0">No active products in this shop yet.</p>
+    </div>
+
+    <aside class="cart-panel">
+      <h2>Your cart</h2>
+      <div class="cart-empty" *ngIf="cart.length === 0">Nothing added yet.</div>
+      <div class="cart-line" *ngFor="let line of cart">
+        <div class="line-info">
+          <strong>{{ line.product.name }}</strong>
+          <span>{{ lineTotal(line) | currency:'INR':'symbol':'1.0-2' }}</span>
+        </div>
+        <div class="line-qty">
+          <button mat-icon-button type="button" (click)="updateQty(line, -1)"><mat-icon>remove</mat-icon></button>
+          <span>{{ line.quantity }}</span>
+          <button mat-icon-button type="button" (click)="updateQty(line, 1)"><mat-icon>add</mat-icon></button>
+        </div>
+      </div>
+
+      <div class="cart-summary" *ngIf="cart.length > 0">
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Discount (₹)</mat-label>
+          <input matInput type="number" min="0" [(ngModel)]="discount" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Payment</mat-label>
+          <mat-select [(ngModel)]="paymentMode">
+            <mat-option value="CASH">Cash</mat-option>
+            <mat-option value="CREDIT">Credit</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <p class="total-row">
+          <span>Total</span>
+          <strong>{{ finalTotal() | currency:'INR':'symbol':'1.0-2' }}</strong>
+        </p>
+        <button
+          mat-raised-button
+          color="accent"
+          class="place-btn"
+          type="button"
+          (click)="placeOrder()"
+          [disabled]="placing">
+          {{ placing ? 'Placing…' : 'Place order' }}
+        </button>
+      </div>
+    </aside>
+  </div>
+</div>

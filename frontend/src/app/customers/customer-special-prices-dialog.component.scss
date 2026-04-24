@@ -1,0 +1,67 @@
+.dialog-body {
+  min-width: min(720px, 92vw);
+  max-height: 70vh;
+}
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hint {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.table-wrap {
+  overflow: auto;
+  max-height: 55vh;
+}
+
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    vertical-align: middle;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #fafafa;
+    z-index: 1;
+  }
+}
+
+.pname {
+  display: block;
+  font-weight: 500;
+}
+
+.pbarcode {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.price-field {
+  width: 140px;
+  margin-bottom: -1.25em;
+}
+
+.custom-row td {
+  background: rgba(255, 243, 224, 0.5);
+}

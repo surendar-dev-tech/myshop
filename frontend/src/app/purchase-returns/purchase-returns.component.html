@@ -1,0 +1,44 @@
+<div class="purchases-container">
+  <div class="page-header">
+    <h1 class="page-title">Purchase returns</h1>
+    <button mat-raised-button color="primary" type="button" (click)="openCreate()" class="add-button">
+      <mat-icon>add</mat-icon>
+      New purchase return
+    </button>
+  </div>
+
+  <mat-card class="purchases-card">
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading…</p>
+      </div>
+
+      <table *ngIf="!isLoading" mat-table [dataSource]="dataSource" class="purchases-table">
+        <ng-container matColumnDef="returnNumber">
+          <th mat-header-cell *matHeaderCellDef>Return #</th>
+          <td mat-cell *matCellDef="let row">{{ row.returnNumber }}</td>
+        </ng-container>
+        <ng-container matColumnDef="returnDate">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let row">{{ row.returnDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="finalAmount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let row">{{ row.finalAmount | currency:'INR' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button type="button" (click)="view(row)" matTooltip="View">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+      <p *ngIf="!isLoading && dataSource.data.length === 0" class="empty">No purchase returns yet.</p>
+    </mat-card-content>
+  </mat-card>
+</div>

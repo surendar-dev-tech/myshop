@@ -1,0 +1,141 @@
+<div
+  #invoicePrintRoot
+  class="invoice-container"
+  [ngClass]="getTemplateClass() + ' print-mode-' + getPrintModeClass()">
+  <!-- Custom Header -->
+  <div class="custom-header" *ngIf="customHeader" [innerHTML]="sanitizer.sanitize(1, customHeader)"></div>
+  
+  <!-- Default Header (if no custom header) -->
+  <div class="invoice-header" *ngIf="!customHeader">
+    <div class="logo-section" *ngIf="shopProfile.showLogo && shopProfile.logoUrl">
+      <img [src]="shopProfile.logoUrl" alt="Shop Logo" class="shop-logo">
+    </div>
+    <h1>{{ shopProfile.shopName || 'MyShop' }}</h1>
+    <p class="store-info" *ngIf="shopProfile.address">{{ shopProfile.address }}</p>
+    <p class="store-info" *ngIf="shopProfile.phone">Phone: {{ shopProfile.phone }}</p>
+    <p class="store-info" *ngIf="shopProfile.email">Email: {{ shopProfile.email }}</p>
+    <p class="store-info" *ngIf="shopProfile.gstNumber">GST: {{ shopProfile.gstNumber }}</p>
+    <p class="store-info" *ngIf="shopProfile.gstStateCode">State: {{ shopProfile.gstStateCode }}</p>
+    <p class="store-info" *ngIf="shopProfile.panNumber">PAN: {{ shopProfile.panNumber }}</p>
+  </div>
+
+  <div class="invoice-details">
+    <div class="invoice-info">
+      <p><strong>Invoice #:</strong> {{ invoiceData.invoiceNumber }}</p>
+      <p><strong>Date:</strong> {{ invoiceData.date | date:'medium' }}</p>
+    </div>
+    <div class="customer-info" *ngIf="invoiceData.customerName">
+      <p><strong>Customer:</strong> {{ invoiceData.customerName }}</p>
+      <p *ngIf="invoiceData.customerPhone"><strong>Phone:</strong> {{ invoiceData.customerPhone }}</p>
+      <p *ngIf="invoiceData.customerAddress"><strong>Address:</strong> {{ invoiceData.customerAddress }}</p>
+    </div>
+  </div>
+
+  <table class="invoice-table" [class.invoice-table-gst]="hasGstLines()">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th *ngIf="hasGstLines()">HSN</th>
+        <th *ngIf="hasGstLines()">%</th>
+        <th>Qty</th>
+        <th>Unit Price</th>
+        <th>Discount</th>
+        <th *ngIf="hasGstLines()">Taxable</th>
+        <th *ngIf="hasGstLines()">CGST</th>
+        <th *ngIf="hasGstLines()">SGST</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of invoiceData.items">
+        <td>{{ item.productName }}</td>
+        <td *ngIf="hasGstLines()">{{ item.hsnCode || '—' }}</td>
+        <td *ngIf="hasGstLines()">{{ item.gstRatePercent != null ? item.gstRatePercent : '—' }}</td>
+        <td>{{ item.quantity }} {{ item.unit }}</td>
+        <td>{{ item.unitPrice | currency:'INR' }}</td>
+        <td>{{ item.discount | currency:'INR' }}</td>
+        <td *ngIf="hasGstLines()">{{ item.taxableValue != null ? (item.taxableValue | currency:'INR') : '—' }}</td>
+        <td *ngIf="hasGstLines()">{{ item.cgstAmount != null ? (item.cgstAmount | currency:'INR') : '—' }}</td>
+        <td *ngIf="hasGstLines()">{{ item.sgstAmount != null ? (item.sgstAmount | currency:'INR') : '—' }}</td>
+        <td>{{ item.total | currency:'INR' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="invoice-summary">
+    <div class="summary-row gst-summary" *ngIf="invoiceData.totalTaxableAmount != null">
+      <span>Taxable (excl. GST):</span>
+      <span>{{ invoiceData.totalTaxableAmount | currency:'INR' }}</span>
+    </div>
+    <div class="summary-row gst-summary" *ngIf="invoiceData.totalCgst != null && invoiceData.totalCgst > 0">
+      <span>CGST:</span>
+      <span>{{ invoiceData.totalCgst | currency:'INR' }}</span>
+    </div>
+    <div class="summary-row gst-summary" *ngIf="invoiceData.totalSgst != null && invoiceData.totalSgst > 0">
+      <span>SGST:</span>
+      <span>{{ invoiceData.totalSgst | currency:'INR' }}</span>
+    </div>
+    <div class="summary-row">
+      <span>Subtotal:</span>
+      <span>{{ invoiceData.subtotal | currency:'INR' }}</span>
+    </div>
+    <div class="summary-row" *ngIf="invoiceData.discount > 0">
+      <span>Discount:</span>
+      <span>-{{ invoiceData.discount | currency:'INR' }}</span>
+    </div>
+    <div class="summary-row total">
+      <span><strong>Total:</strong></span>
+      <span><strong>{{ invoiceData.total | currency:'INR' }}</strong></span>
+    </div>
+    <div class="payment-info">
+      <p><strong>Payment Mode:</strong> {{ invoiceData.paymentMode }}</p>
+      <p *ngIf="invoiceData.partialPaymentAmount && invoiceData.partialPaymentAmount > 0">
+        <strong>Amount Paid:</strong> {{ invoiceData.partialPaymentAmount | currency:'INR' }}
+      </p>
+      <p *ngIf="invoiceData.isCredit" class="credit-note">
+        <strong>Note:</strong> 
+        <span *ngIf="invoiceData.partialPaymentAmount && invoiceData.partialPaymentAmount > 0">
+          Partial payment of {{ invoiceData.partialPaymentAmount | currency:'INR' }} received. 
+          Remaining amount of {{ (invoiceData.total - invoiceData.partialPaymentAmount) | currency:'INR' }} will be added to customer's outstanding balance.
+        </span>
+        <span *ngIf="!invoiceData.partialPaymentAmount || invoiceData.partialPaymentAmount === 0">
+          This is a credit sale. Amount will be added to customer's outstanding balance.
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Custom Footer -->
+  <div class="custom-footer" *ngIf="customFooter" [innerHTML]="sanitizer.sanitize(1, customFooter)"></div>
+  
+  <!-- Default Footer (if no custom footer) -->
+  <div class="invoice-footer" *ngIf="!customFooter">
+    <p *ngIf="shopProfile.footerMessage">{{ shopProfile.footerMessage }}</p>
+    <p *ngIf="!shopProfile.footerMessage">Thank you for your business!</p>
+    <p class="footer-note" *ngIf="shopProfile.termsAndConditions">{{ shopProfile.termsAndConditions }}</p>
+    <p class="footer-note">This is a computer-generated invoice.</p>
+  </div>
+
+  <div class="invoice-actions no-print">
+    <button mat-raised-button color="primary" (click)="onPrint()">
+      <mat-icon>print</mat-icon>
+      Print Invoice
+    </button>
+    <button
+      *ngIf="qzTrayEnabled"
+      mat-stroked-button
+      color="accent"
+      type="button"
+      (click)="onPrintThermalQz()">
+      <mat-icon>receipt</mat-icon>
+      Print receipt (QZ Tray)
+    </button>
+    <button mat-button (click)="onClose()">Close</button>
+  </div>
+
+  <p class="invoice-browser-print-note no-print">
+    Web apps cannot send straight to a printer without your confirmation — that is a browser security rule.
+    Choose your receipt printer or PDF here; for silent thermal printing, a desktop POS or a print bridge (e.g. QZ Tray) is required.
+  </p>
+</div>
+

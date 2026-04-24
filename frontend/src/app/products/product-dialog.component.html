@@ -1,0 +1,134 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Product' : 'Add Product' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="productForm" class="product-form">
+    <!-- Product Name -->
+    <mat-form-field class="full-width">
+      <mat-label>Product Name</mat-label>
+      <input matInput formControlName="productName" required>
+      <mat-error *ngIf="productForm.get('productName')?.hasError('required')">
+        Product name is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Barcode -->
+    <mat-form-field class="full-width">
+      <mat-label>Barcode</mat-label>
+      <input matInput formControlName="barcode" required>
+      <mat-error *ngIf="productForm.get('barcode')?.hasError('required')">
+        Barcode is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Description -->
+    <mat-form-field class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3" placeholder="Optional product description"></textarea>
+    </mat-form-field>
+
+    <!-- Category -->
+    <div class="category-row">
+      <mat-form-field class="category-select">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="categoryId">
+          <mat-option [value]="null">No category</mat-option>
+          <mat-option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button
+        *ngIf="canAddCategory"
+        type="button"
+        mat-stroked-button
+        color="primary"
+        class="category-add-btn"
+        (click)="openAddCategoryDialog()"
+        matTooltip="Create a new category and use it for this product">
+        <mat-icon>add</mat-icon>
+        New category
+      </button>
+    </div>
+
+    <!-- Price Row -->
+    <div class="form-row">
+      <mat-form-field class="form-field">
+        <mat-label>Purchase Price (₹)</mat-label>
+        <input matInput type="number" formControlName="purchasePrice" required step="0.01" min="0" placeholder="0.00">
+        <mat-error *ngIf="productForm.get('purchasePrice')?.hasError('required')">
+          Purchase price is required
+        </mat-error>
+        <mat-error *ngIf="productForm.get('purchasePrice')?.hasError('min')">
+          Price must be greater than or equal to 0
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="form-field">
+        <mat-label>Selling Price (₹)</mat-label>
+        <input matInput type="number" formControlName="sellingPrice" required step="0.01" min="0" placeholder="0.00">
+        <mat-error *ngIf="productForm.get('sellingPrice')?.hasError('required')">
+          Selling price is required
+        </mat-error>
+        <mat-error *ngIf="productForm.get('sellingPrice')?.hasError('min')">
+          Price must be greater than or equal to 0
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field class="form-field">
+        <mat-label>HSN / SAC</mat-label>
+        <input matInput formControlName="hsnCode" placeholder="e.g. 0409" maxlength="16" />
+      </mat-form-field>
+      <mat-form-field class="form-field">
+        <mat-label>GST %</mat-label>
+        <input matInput type="number" formControlName="gstRatePercent" step="0.01" min="0" placeholder="0 = no GST" />
+      </mat-form-field>
+    </div>
+
+    <!-- Unit -->
+    <mat-form-field class="full-width">
+      <mat-label>Unit</mat-label>
+      <mat-select formControlName="unit" required>
+        <mat-option value="piece">Piece</mat-option>
+        <mat-option value="kg">Kilogram (kg)</mat-option>
+        <mat-option value="gram">Gram (g)</mat-option>
+        <mat-option value="liter">Liter (L)</mat-option>
+        <mat-option value="ml">Milliliter (ml)</mat-option>
+        <mat-option value="pack">Pack</mat-option>
+        <mat-option value="box">Box</mat-option>
+        <mat-option value="dozen">Dozen</mat-option>
+      </mat-select>
+      <mat-error *ngIf="productForm.get('unit')?.hasError('required')">
+        Unit is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Initial Stock (Only for new products) -->
+    <mat-form-field class="full-width" *ngIf="!isEditMode">
+      <mat-label>Initial Stock</mat-label>
+      <input matInput type="number" formControlName="initialStock" step="0.01" min="0" placeholder="0">
+      <mat-hint>Optional - Set initial stock quantity when creating product</mat-hint>
+      <mat-error *ngIf="productForm.get('initialStock')?.hasError('min')">
+        Stock must be greater than or equal to 0
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+  <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="productForm.invalid || isLoading">
+    <mat-icon *ngIf="isLoading">hourglass_empty</mat-icon>
+    {{ isLoading ? 'Saving...' : 'Save' }}
+  </button>
+</mat-dialog-actions>
+
+
+
+
+
+
+
+
+

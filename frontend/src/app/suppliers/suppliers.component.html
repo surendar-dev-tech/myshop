@@ -1,0 +1,84 @@
+<div class="suppliers-container">
+  <div class="page-header">
+    <h1 class="page-title">Suppliers</h1>
+    <button mat-raised-button color="primary" (click)="openAddSupplierDialog()">
+      <mat-icon>add</mat-icon>
+      Add Supplier
+    </button>
+  </div>
+
+  <mat-card class="suppliers-card">
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading suppliers...</p>
+      </div>
+
+      <table 
+        *ngIf="!isLoading" 
+        mat-table 
+        [dataSource]="suppliersDataSource" 
+        class="suppliers-table">
+        
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let supplier">{{ supplier.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="contactPerson">
+          <th mat-header-cell *matHeaderCellDef>Contact Person</th>
+          <td mat-cell *matCellDef="let supplier">{{ supplier.contactPerson || 'N/A' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="phone">
+          <th mat-header-cell *matHeaderCellDef>Phone</th>
+          <td mat-cell *matCellDef="let supplier">{{ supplier.phone || 'N/A' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let supplier">{{ supplier.email || 'N/A' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="active">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let supplier">
+            <span [class]="supplier.active ? 'status-active' : 'status-inactive'">
+              {{ supplier.active ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let supplier">
+            <button mat-icon-button color="primary" (click)="openEditSupplierDialog(supplier)" matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteSupplier(supplier.id!)" matTooltip="Deactivate">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <div *ngIf="!isLoading && suppliersDataSource.data.length === 0" class="empty-state">
+        <mat-icon class="empty-icon">local_shipping</mat-icon>
+        <h3>No Suppliers</h3>
+        <p>Click "Add Supplier" to create your first supplier.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+
+
+
+
+
+
+
+

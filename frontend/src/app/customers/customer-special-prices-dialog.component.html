@@ -1,0 +1,49 @@
+<h2 mat-dialog-title>
+  <mat-icon>price_change</mat-icon>
+  Prices for {{ customerName }}
+</h2>
+
+<mat-dialog-content class="dialog-body">
+  <p class="hint">
+    Set a <strong>custom unit price</strong> per product for this customer. Leave the value equal to the catalog price to
+    use the default.
+  </p>
+
+  <div *ngIf="loading" class="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <div *ngIf="!loading" class="table-wrap">
+    <table class="price-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Catalog</th>
+          <th>Unit price for customer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of rows" [class.custom-row]="isCustom(row)">
+          <td>
+            <span class="pname">{{ row.product.name }}</span>
+            <span class="pbarcode">{{ row.product.barcode }}</span>
+          </td>
+          <td>{{ catalogPrice(row) | currency : 'INR' }}</td>
+          <td>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="price-field">
+              <input matInput type="number" min="0" step="0.01" [(ngModel)]="row.editedPrice" />
+            </mat-form-field>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()" [disabled]="saving">Cancel</button>
+  <button mat-flat-button color="primary" type="button" (click)="save()" [disabled]="loading || saving">
+    <mat-icon *ngIf="!saving">save</mat-icon>
+    <span>{{ saving ? 'Saving…' : 'Save' }}</span>
+  </button>
+</mat-dialog-actions>
