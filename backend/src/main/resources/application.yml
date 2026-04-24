@@ -7,11 +7,17 @@ spring:
 
   # Default: MariaDB/MySQL on standard port 3306. Override when using Docker (e.g. -p 3307:3306):
   #   set SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD
+#  datasource:
+#    url: ${SPRING_DATASOURCE_URL:jdbc:mariadb://localhost:3307/myshop_db?createDatabaseIfNotExist=true}
+#    username: ${SPRING_DATASOURCE_USERNAME:root}
+#    password: ${SPRING_DATASOURCE_PASSWORD:Admin}
+#    driver-class-name: org.mariadb.jdbc.Driver
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mariadb://localhost:3307/myshop_db?createDatabaseIfNotExist=true}
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:Admin}
-    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${jdbc:postgresql://dpg-d7ltat77f7vs739cdnq0-a:5432/myshop_db_b5yi}
+    username: ${myshop_db_b5yi_user}
+    password: ${SS0ViF3fx0urEPBfC0FPRy3IQegb0ua4}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
