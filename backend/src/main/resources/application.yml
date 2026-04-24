@@ -3,7 +3,7 @@ spring:
     name: myshop-backend
 
   profiles:
-    active: dev
+    active: prod
 
   # Default: MariaDB/MySQL on standard port 3306. Override when using Docker (e.g. -p 3307:3306):
   #   set SPRING_DATASOURCE_URL, SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD
