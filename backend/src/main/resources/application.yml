@@ -14,9 +14,9 @@ spring:
 #    driver-class-name: org.mariadb.jdbc.Driver
 
   datasource:
-    url: ${jdbc:postgresql://dpg-d7ltat77f7vs739cdnq0-a:5432/myshop_db_b5yi}
-    username: ${myshop_db_b5yi_user}
-    password: ${SS0ViF3fx0urEPBfC0FPRy3IQegb0ua4}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
 
   jpa:
