@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter, Subscription } from 'rxjs';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,11 +30,14 @@ import { CustomerOrderService } from '../core/services/customer-order.service';
   styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent implements OnInit {
+  isSalesPage = false;
   currentUser: any;
   isAdmin = false;
   /** Categories: same as products page — admin and staff can manage */
   canManageCategories = false;
   unseenOnlineOrders = 0;
+
+  private routerSub!: Subscription;
 
   constructor(
     private authService: AuthService,
@@ -44,6 +48,19 @@ export class LayoutComponent implements OnInit {
     this.isAdmin = authService.hasRole('ADMIN');
     this.canManageCategories =
       this.isAdmin || this.authService.hasRole('STAFF');
+
+    this.isSalesPage = this.router.url.includes('/sales');
+    this.routerSub = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.isSalesPage = event.urlAfterRedirects.includes('/sales');
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerSub) {
+      this.routerSub.unsubscribe();
+    }
   }
 
   ngOnInit(): void {

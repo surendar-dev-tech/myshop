@@ -181,6 +181,13 @@
   background: transparent;
 }
 
+.content.sales-content {
+  padding: 0;
+  max-width: 100vw;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
 .username-wrap {
   display: inline-flex;
   align-items: center;

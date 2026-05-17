@@ -152,26 +152,25 @@ public class SaleService {
             BigDecimal saleAmount = savedSale.getFinalAmount();
             BigDecimal partialPayment =
                     saleRequest.getPartialPaymentAmount() != null ? saleRequest.getPartialPaymentAmount() : BigDecimal.ZERO;
-            BigDecimal newCreditAmount = saleAmount.subtract(partialPayment);
+            
+            BigDecimal appliedToSale = partialPayment.min(saleAmount);
+            BigDecimal surplus = partialPayment.subtract(appliedToSale);
+            BigDecimal newCreditAmount = saleAmount.subtract(appliedToSale);
             BigDecimal creditLimit = customer.getCreditLimit() != null ? customer.getCreditLimit() : BigDecimal.ZERO;
 
-            if (partialPayment.compareTo(saleAmount) > 0) {
-                throw new BadRequestException("Partial payment cannot exceed sale amount");
-            }
-
             if (creditLimit.compareTo(BigDecimal.ZERO) > 0) {
-                if (currentOutstanding.add(newCreditAmount).compareTo(creditLimit) > 0) {
+                if (currentOutstanding.add(newCreditAmount).subtract(surplus).compareTo(creditLimit) > 0) {
                     throw new BadRequestException(
                             "Credit limit exceeded. Current outstanding: " + currentOutstanding
                                     + ", Credit limit: " + creditLimit + ", New credit: " + newCreditAmount);
                 }
             }
 
-            if (partialPayment.compareTo(BigDecimal.ZERO) > 0) {
+            if (appliedToSale.compareTo(BigDecimal.ZERO) > 0) {
                 Payment payment = new Payment();
                 payment.setSale(savedSale);
                 payment.setCustomer(customer);
-                payment.setAmount(partialPayment);
+                payment.setAmount(appliedToSale);
                 payment.setPaymentType(Payment.PaymentType.SALE_PAYMENT);
                 payment.setNotes("Partial payment - Invoice: " + savedSale.getInvoiceNumber());
                 payment.setUser(user);
@@ -186,8 +185,8 @@ public class SaleService {
                 creditTransaction.setTransactionType(CreditTransaction.TransactionType.CREDIT_ADDED);
                 creditTransaction.setNotes(
                         "Credit sale - Invoice: " + savedSale.getInvoiceNumber()
-                                + (partialPayment.compareTo(BigDecimal.ZERO) > 0
-                                        ? " (Partial payment: " + partialPayment + ")"
+                                + (appliedToSale.compareTo(BigDecimal.ZERO) > 0
+                                        ? " (Partial payment: " + appliedToSale + ")"
                                         : ""));
                 creditTransaction.setUser(user);
 
@@ -197,7 +196,15 @@ public class SaleService {
                 creditTransactionRepository.save(creditTransaction);
             }
 
-            customer.setCurrentCredit(currentOutstanding.add(newCreditAmount));
+            if (surplus.compareTo(BigDecimal.ZERO) > 0) {
+                creditService.recordCreditPayment(
+                        customer.getId(),
+                        surplus,
+                        "Credit payment from sale - Invoice: " + savedSale.getInvoiceNumber());
+            }
+
+            BigDecimal updatedOutstanding = creditService.getOutstandingBalance(customer.getId());
+            customer.setCurrentCredit(updatedOutstanding);
             customerRepository.save(customer);
         }
 
@@ -347,19 +354,22 @@ public class SaleService {
         return catalogPrice != null ? catalogPrice.setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
     }
 
+    public String getNextInvoiceNumber() {
+        Long companyId = tenantService.requireCompanyId();
+        return generateInvoiceNumber(companyId);
+    }
+
     private String generateInvoiceNumber(Long companyId) {
-        String candidate;
-        int attempts = 0;
-        do {
-            candidate =
-                    "INV-"
-                            + companyId
-                            + "-"
-                            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"))
-                            + "-"
-                            + (int) (Math.random() * 100000);
-            attempts++;
-        } while (saleRepository.existsByCompany_IdAndInvoiceNumber(companyId, candidate) && attempts < 50);
-        return candidate;
+        Optional<Sale> lastSale = saleRepository.findTopByCompany_IdOrderByCreatedAtDesc(companyId);
+        if (lastSale.isPresent() && lastSale.get().getInvoiceNumber() != null) {
+            String lastInv = lastSale.get().getInvoiceNumber();
+            try {
+                long nextNum = Long.parseLong(lastInv) + 1;
+                return String.format("%03d", nextNum);
+            } catch (NumberFormatException e) {
+                // Ignore and fall through
+            }
+        }
+        return "001";
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource, MatTable } from '@angular/material/table';
@@ -14,7 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, timeout, finalize } from 'rxjs/operators';
 import { ProductService, Product } from '../core/services/product.service';
 import { ApiResponse } from '../core/models/auth.model';
 import { AuthService } from '../core/services/auth.service';
@@ -61,7 +61,8 @@ export class ProductsComponent implements OnInit {
     private productService: ProductService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {
     this.isAdmin = this.authService.hasRole('ADMIN');
     const isStaff = this.authService.hasRole('STAFF');
@@ -93,24 +94,31 @@ export class ProductsComponent implements OnInit {
     this.loadPageData();
   }
 
-  /** Single round-trip: categories + products in parallel. Stock is on each product from API. */
+  /** Single round-trip: categories + active products in parallel. Stock is on each product from API. */
   loadPageData(): void {
     this.isLoading = true;
     forkJoin({
       categories: this.productService.getCategories().pipe(
+        timeout({ first: 10000 }),
         catchError((err) => {
           console.error('Error loading categories:', err);
           return of({ success: false, message: '', data: [] } as ApiResponse<any[]>);
         })
       ),
-      products: this.productService.getAllProducts().pipe(
+      products: this.productService.getActiveProducts().pipe(
+        timeout({ first: 10000 }),
         catchError((err) => {
           console.error('Error loading products:', err);
           this.showErrorMessage('Error loading products. Please try again.');
           return of({ success: false, message: '', data: [] } as ApiResponse<Product[]>);
         })
       )
-    }).subscribe({
+    })
+    .pipe(finalize(() => {
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }))
+    .subscribe({
       next: ({ categories, products }) => {
         if (categories.success && categories.data) {
           this.categories = categories.data;
@@ -120,13 +128,11 @@ export class ProductsComponent implements OnInit {
         } else {
           this.productsDataSource.data = [];
         }
-        this.isLoading = false;
       },
       error: (err) => {
         console.error('Error loading products page:', err);
         this.showErrorMessage('Error loading products. Please try again.');
         this.productsDataSource.data = [];
-        this.isLoading = false;
       }
     });
   }
@@ -197,18 +203,26 @@ export class ProductsComponent implements OnInit {
 
   deleteProduct(productId: number): void {
     if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+      // Optimistic update: remove immediately from the table so there is no loading delay.
+      this.productsDataSource.data = this.productsDataSource.data.filter(
+        p => p.id !== productId
+      );
+
       this.productService.deleteProduct(productId).subscribe({
         next: (response) => {
           if (response.success) {
             this.showSuccessMessage('Product deleted successfully');
-            this.loadPageData();
           } else {
+            // Rollback: reload from server if the API reported failure.
             this.showErrorMessage('Failed to delete product');
+            this.loadPageData();
           }
         },
         error: (error) => {
           console.error('Error deleting product:', error);
+          // Rollback: put the row back by reloading.
           this.showErrorMessage('Error deleting product. Please try again.');
+          this.loadPageData();
         }
       });
     }

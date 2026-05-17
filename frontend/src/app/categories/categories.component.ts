@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { timeout, finalize } from 'rxjs/operators';
 import { CategoryService, Category } from '../core/services/category.service';
 import { AuthService } from '../core/services/auth.service';
 import { CategoryDialogComponent } from './category-dialog.component';
@@ -41,7 +42,8 @@ export class CategoriesComponent implements OnInit {
     private categoryService: CategoryService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {
     this.isAdmin = this.authService.hasRole('ADMIN');
     const isStaff = this.authService.hasRole('STAFF');
@@ -55,20 +57,26 @@ export class CategoriesComponent implements OnInit {
 
   loadCategories(): void {
     this.isLoading = true;
-    this.categoryService.getAllCategories().subscribe({
+    this.categoryService.getAllCategories()
+      .pipe(
+        timeout({ first: 10000 }),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.categoriesDataSource.data = response.data;
         } else {
           this.categoriesDataSource.data = [];
         }
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading categories:', error);
         this.showErrorMessage('Error loading categories. Please try again.');
         this.categoriesDataSource.data = [];
-        this.isLoading = false;
       }
     });
   }
@@ -105,18 +113,26 @@ export class CategoriesComponent implements OnInit {
 
   deleteCategory(categoryId: number): void {
     if (confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
+      // Optimistic update: remove immediately from the table so there is no loading delay.
+      this.categoriesDataSource.data = this.categoriesDataSource.data.filter(
+        c => c.id !== categoryId
+      );
+
       this.categoryService.deleteCategory(categoryId).subscribe({
         next: (response) => {
           if (response.success) {
             this.showSuccessMessage('Category deleted successfully');
-            this.loadCategories();
           } else {
+            // Rollback: reload from server if the API reported failure.
             this.showErrorMessage('Failed to delete category');
+            this.loadCategories();
           }
         },
         error: (error) => {
           console.error('Error deleting category:', error);
+          // Rollback: put the row back by reloading.
           this.showErrorMessage('Error deleting category. Please try again.');
+          this.loadCategories();
         }
       });
     }

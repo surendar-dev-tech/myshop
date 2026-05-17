@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { timeout, finalize } from 'rxjs/operators';
 import { CustomerService, Customer } from '../core/services/customer.service';
 import { AuthService } from '../core/services/auth.service';
 import { CustomerDialogComponent } from './customer-dialog.component';
@@ -41,7 +42,8 @@ export class CustomersComponent implements OnInit {
     private customerService: CustomerService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -67,20 +69,27 @@ export class CustomersComponent implements OnInit {
 
   loadCustomers(): void {
     this.isLoading = true;
-    this.customerService.getAllCustomers().subscribe({
+    // Use active-only endpoint — inactive customers never appear in the list.
+    this.customerService.getActiveCustomers()
+      .pipe(
+        timeout({ first: 10000 }),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.customersDataSource.data = response.data;
         } else {
           this.customersDataSource.data = [];
         }
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading customers:', error);
         this.showErrorMessage('Error loading customers. Please try again.');
         this.customersDataSource.data = [];
-        this.isLoading = false;
       }
     });
   }
@@ -131,18 +140,26 @@ export class CustomersComponent implements OnInit {
 
   deleteCustomer(customerId: number): void {
     if (confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+      // Optimistic update: remove immediately from the table so there is no loading delay.
+      this.customersDataSource.data = this.customersDataSource.data.filter(
+        c => c.id !== customerId
+      );
+
       this.customerService.deleteCustomer(customerId).subscribe({
         next: (response) => {
           if (response.success) {
             this.showSuccessMessage('Customer deleted successfully');
-            this.loadCustomers();
           } else {
+            // Rollback: reload from server if the API reported failure.
             this.showErrorMessage('Failed to delete customer');
+            this.loadCustomers();
           }
         },
         error: (error) => {
           console.error('Error deleting customer:', error);
+          // Rollback: put the row back by reloading.
           this.showErrorMessage('Error deleting customer. Please try again.');
+          this.loadCustomers();
         }
       });
     }

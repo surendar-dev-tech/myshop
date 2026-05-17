@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/auth.model';
 
@@ -62,20 +63,41 @@ export interface Sale {
   items: SaleLineItem[];
 }
 
+interface CacheEntry<T> {
+  data: T;
+  expiresAt: number;
+}
+
+const CACHE_TTL_MS = 30_000; // 30 seconds
+
 @Injectable({
   providedIn: 'root'
 })
 export class SaleService {
   private apiUrl = `${environment.apiUrl}/sales`;
 
+  private listCache: CacheEntry<ApiResponse<Sale[]>> | null = null;
+
   constructor(private http: HttpClient) {}
 
+  /** Bust the sales list cache (called automatically on create). */
+  invalidateCache(): void {
+    this.listCache = null;
+  }
+
   createSale(sale: SaleRequest): Observable<ApiResponse<Sale>> {
+    this.invalidateCache();
     return this.http.post<ApiResponse<Sale>>(this.apiUrl, sale);
   }
 
   getAllSales(): Observable<ApiResponse<Sale[]>> {
-    return this.http.get<ApiResponse<Sale[]>>(this.apiUrl);
+    const now = Date.now();
+    if (this.listCache && this.listCache.expiresAt > now) {
+      return of(this.listCache.data);
+    }
+    return this.http.get<ApiResponse<Sale[]>>(this.apiUrl).pipe(
+      tap(r => { this.listCache = { data: r, expiresAt: Date.now() + CACHE_TTL_MS }; })
+    );
   }
 
   getSaleById(id: number): Observable<ApiResponse<Sale>> {
@@ -87,5 +109,8 @@ export class SaleService {
       params: { startDate, endDate }
     });
   }
-}
 
+  getNextInvoiceNumber(): Observable<ApiResponse<string>> {
+    return this.http.get<ApiResponse<string>>(`${this.apiUrl}/next-invoice-number`);
+  }
+}

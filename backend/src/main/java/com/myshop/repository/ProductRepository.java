@@ -27,6 +27,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByCompany_IdAndCategory_Id(Long companyId, Long categoryId);
 
+    @Query("SELECT p FROM Product p WHERE p.company.id = :companyId AND p.active = true AND " +
+           "(LOWER(p.name) LIKE LOWER(CONCAT(:query, '%')) OR LOWER(p.barcode) LIKE LOWER(CONCAT(:query, '%')))")
+    List<Product> searchActiveProducts(@Param("companyId") Long companyId, @Param("query") String query);
+
     @Query(
             "SELECT p FROM Product p WHERE p.company.id = :companyId AND p.active = true AND "
                     + "(SELECT COALESCE(SUM(CASE WHEN s.transactionType = 'STOCK_IN' THEN s.quantity ELSE -s.quantity END), 0) "

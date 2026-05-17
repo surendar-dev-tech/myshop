@@ -109,7 +109,13 @@ public class CustomerService {
 
     public List<Customer> getActiveCustomers() {
         Long companyId = tenantService.requireCompanyId();
-        List<Customer> list = customerRepository.findByCompany_IdAndActiveTrue(companyId);
+        List<Customer> list = customerRepository.findByCompany_IdAndActiveTrue(companyId).stream()
+                .map(customer -> {
+                    BigDecimal balance = creditTransactionRepository.getOutstandingBalance(customer.getId());
+                    customer.setOutstandingBalance(balance != null ? balance : BigDecimal.ZERO);
+                    return customer;
+                })
+                .collect(Collectors.toList());
         enrichPortalInfo(list, companyId);
         return list;
     }

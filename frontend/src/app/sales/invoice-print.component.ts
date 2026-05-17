@@ -124,6 +124,7 @@ export class InvoicePrintComponent implements OnInit, AfterViewInit {
       if (iframe.parentNode) {
         iframe.parentNode.removeChild(iframe);
       }
+      this.dialogRef.close();
     };
 
     try {
@@ -132,6 +133,8 @@ export class InvoicePrintComponent implements OnInit, AfterViewInit {
       document.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
         doc.write(node.outerHTML);
       });
+      // Force 80mm thermal page size globally inside the print iframe
+      doc.write('<style>@page { size: 80mm auto; margin: 0; } body, html { width: 80mm; margin: 0; padding: 0; background: white; }</style>');
       doc.write('</head><body style="margin:0;background:#fff">');
       doc.write(root.outerHTML);
       doc.write('</body></html>');
@@ -149,6 +152,7 @@ export class InvoicePrintComponent implements OnInit, AfterViewInit {
         iframe.parentNode.removeChild(iframe);
       }
       window.print();
+      this.dialogRef.close();
     }
   }
 

@@ -41,13 +41,6 @@ public class SaleController {
         return ResponseEntity.ok(ApiResponse.success(saleDtos));
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<SaleDto>> getSaleById(@PathVariable Long id) {
-        Sale sale = saleService.getSaleById(id);
-        SaleDto saleDto = saleService.convertToDto(sale);
-        return ResponseEntity.ok(ApiResponse.success(saleDto));
-    }
-    
     @GetMapping("/date-range")
     public ResponseEntity<ApiResponse<List<SaleDto>>> getSalesByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -57,6 +50,19 @@ public class SaleController {
                 .map(saleService::convertToDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success(saleDtos));
+    }
+
+    @GetMapping("/next-invoice-number")
+    public ResponseEntity<ApiResponse<String>> getNextInvoiceNumber() {
+        String nextInv = saleService.getNextInvoiceNumber();
+        return ResponseEntity.ok(ApiResponse.success(nextInv));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SaleDto>> getSaleById(@PathVariable Long id) {
+        Sale sale = saleService.getSaleById(id);
+        SaleDto saleDto = saleService.convertToDto(sale);
+        return ResponseEntity.ok(ApiResponse.success(saleDto));
     }
 }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { timeout, finalize } from 'rxjs/operators';
 import { SupplierService, Supplier } from '../core/services/supplier.service';
 import { SupplierDialogComponent } from './supplier-dialog.component';
 
@@ -30,13 +31,15 @@ import { SupplierDialogComponent } from './supplier-dialog.component';
 })
 export class SuppliersComponent implements OnInit {
   suppliersDataSource = new MatTableDataSource<Supplier>([]);
-  displayedColumns: string[] = ['name', 'contactPerson', 'phone', 'email', 'active', 'actions'];
+  /** The "active" status column is removed — only active suppliers are fetched. */
+  displayedColumns: string[] = ['name', 'contactPerson', 'phone', 'email', 'actions'];
   isLoading = false;
 
   constructor(
     private supplierService: SupplierService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -45,20 +48,27 @@ export class SuppliersComponent implements OnInit {
 
   loadSuppliers(): void {
     this.isLoading = true;
-    this.supplierService.getAllSuppliers().subscribe({
+    // Use active-only endpoint — inactive suppliers are never shown in the list.
+    this.supplierService.getActiveSuppliers()
+      .pipe(
+        timeout({ first: 10000 }),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.suppliersDataSource.data = response.data;
         } else {
           this.suppliersDataSource.data = [];
         }
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading suppliers:', error);
         this.showErrorMessage('Error loading suppliers. Please try again.');
         this.suppliersDataSource.data = [];
-        this.isLoading = false;
       }
     });
   }
@@ -88,6 +98,7 @@ export class SuppliersComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        // Refresh from server to pick up any field changes (cache was already busted by the service).
         this.loadSuppliers();
       }
     });
@@ -95,18 +106,26 @@ export class SuppliersComponent implements OnInit {
 
   deleteSupplier(supplierId: number): void {
     if (confirm('Are you sure you want to deactivate this supplier?')) {
+      // Optimistic update: remove immediately from the table so there is no loading delay.
+      this.suppliersDataSource.data = this.suppliersDataSource.data.filter(
+        s => s.id !== supplierId
+      );
+
       this.supplierService.deleteSupplier(supplierId).subscribe({
         next: (response) => {
           if (response.success) {
             this.showSuccessMessage('Supplier deactivated successfully');
-            this.loadSuppliers();
           } else {
+            // Rollback: reload from server if the API reported failure.
             this.showErrorMessage('Failed to deactivate supplier');
+            this.loadSuppliers();
           }
         },
         error: (error) => {
           console.error('Error deleting supplier:', error);
+          // Rollback: put the row back by reloading.
           this.showErrorMessage('Error deactivating supplier. Please try again.');
+          this.loadSuppliers();
         }
       });
     }
@@ -129,4 +148,3 @@ export class SuppliersComponent implements OnInit {
     });
   }
 }
-

@@ -125,6 +125,14 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    public List<ProductDto> searchActiveProducts(String query) {
+        Long companyId = tenantService.requireCompanyId();
+        Map<Long, BigDecimal> stockTotals = loadStockTotalsMap(companyId);
+        return productRepository.searchActiveProducts(companyId, query).stream()
+                .map(p -> convertToDto(p, stockTotals.getOrDefault(p.getId(), BigDecimal.ZERO)))
+                .collect(Collectors.toList());
+    }
+
     private Map<Long, BigDecimal> loadStockTotalsMap(Long companyId) {
         List<Object[]> rows = stockRepository.getProductStockTotalsByCompany(companyId);
         Map<Long, BigDecimal> map = new HashMap<>();

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -11,6 +11,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { timeout, finalize } from 'rxjs/operators';
 import { SaleService, Sale } from '../core/services/sale.service';
 import { saleToInvoiceData } from '../sales/invoice-from-sale';
 import { InvoicePrintDialogService } from '../sales/invoice-print-dialog.service';
@@ -52,7 +53,8 @@ export class InvoicesComponent implements OnInit {
     private saleService: SaleService,
     private invoicePrintDialog: InvoicePrintDialogService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -61,9 +63,16 @@ export class InvoicesComponent implements OnInit {
 
   loadSales(): void {
     this.loading = true;
-    this.saleService.getAllSales().subscribe({
+    this.saleService.getAllSales()
+      .pipe(
+        timeout({ first: 10000 }),
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
       next: (res) => {
-        this.loading = false;
         if (res.success && res.data) {
           this.dataSource.data = res.data;
         } else {
@@ -71,7 +80,6 @@ export class InvoicesComponent implements OnInit {
         }
       },
       error: () => {
-        this.loading = false;
         this.snackBar.open('Could not load invoices', 'Close', { duration: 4000 });
       }
     });
@@ -141,6 +149,7 @@ export class InvoicesComponent implements OnInit {
       .afterClosed()
       .subscribe((saved) => {
         if (saved) {
+          this.saleService.invalidateCache();
           this.loadSales();
         }
       });
@@ -163,6 +172,7 @@ export class InvoicesComponent implements OnInit {
       .afterClosed()
       .subscribe((saved) => {
         if (saved) {
+          this.saleService.invalidateCache();
           this.loadSales();
         }
       });

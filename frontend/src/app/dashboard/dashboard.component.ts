@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { forkJoin, of } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, timeout } from 'rxjs/operators';
 import { ApiResponse } from '../core/models/auth.model';
 import { AnalyticsService } from '../core/services/analytics.service';
 import { CustomerOrderService } from '../core/services/customer-order.service';
@@ -110,10 +110,12 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private analyticsService: AnalyticsService,
-    private customerOrderService: CustomerOrderService
+    private customerOrderService: CustomerOrderService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    // On navigation, serve cached data (fast). Only the manual Refresh button busts the cache.
     this.loadDashboardData();
   }
 
@@ -121,17 +123,31 @@ export class DashboardComponent implements OnInit {
     this.isLoading = true;
 
     forkJoin({
-      analytics: this.analyticsService.getDashboardAnalytics(),
-      trend: this.analyticsService.getSalesTrend(30),
-      topProducts: this.analyticsService.getTopProducts(8),
-      topCustomers: this.analyticsService.getTopCustomers(8),
+      analytics: this.analyticsService.getDashboardAnalytics().pipe(
+        timeout({ first: 10000 }),
+        catchError(() => of({ success: false, message: '', data: null } as any))
+      ),
+      trend: this.analyticsService.getSalesTrend(30).pipe(
+        timeout({ first: 10000 }),
+        catchError(() => of({ success: false, message: '', data: null } as any))
+      ),
+      topProducts: this.analyticsService.getTopProducts(8).pipe(
+        timeout({ first: 10000 }),
+        catchError(() => of({ success: false, message: '', data: null } as any))
+      ),
+      topCustomers: this.analyticsService.getTopCustomers(8).pipe(
+        timeout({ first: 10000 }),
+        catchError(() => of({ success: false, message: '', data: null } as any))
+      ),
       unseenOrders: this.customerOrderService.getUnseenCount().pipe(
+        timeout({ first: 10000 }),
         catchError(() => of({ success: false, message: '', data: 0 } as ApiResponse<number>))
       )
     })
       .pipe(finalize(() => {
         this.isLoading = false;
         this.lastRefreshed = new Date();
+        this.cdr.detectChanges();
       }))
       .subscribe({
         next: ({ analytics, trend, topProducts, topCustomers, unseenOrders }) => {
@@ -188,6 +204,8 @@ export class DashboardComponent implements OnInit {
   }
 
   refreshDashboard(): void {
+    // Bust all analytics caches so this call always fetches fresh data from the server.
+    this.analyticsService.invalidateCache();
     this.loadDashboardData();
   }
 }

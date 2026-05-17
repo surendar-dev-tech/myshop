@@ -41,22 +41,22 @@ public class CustomerController {
         return ResponseEntity.ok(ApiResponse.success("Customer updated successfully", updated));
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Customer>> getCustomerById(@PathVariable Long id) {
-        Customer customer = customerService.getCustomerById(id);
-        return ResponseEntity.ok(ApiResponse.success(customer));
-    }
-    
     @GetMapping
     public ResponseEntity<ApiResponse<List<Customer>>> getAllCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers));
     }
-    
+
     @GetMapping("/active")
     public ResponseEntity<ApiResponse<List<Customer>>> getActiveCustomers() {
         List<Customer> customers = customerService.getActiveCustomers();
         return ResponseEntity.ok(ApiResponse.success(customers));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Customer>> getCustomerById(@PathVariable Long id) {
+        Customer customer = customerService.getCustomerById(id);
+        return ResponseEntity.ok(ApiResponse.success(customer));
     }
     
     @DeleteMapping("/{id}")

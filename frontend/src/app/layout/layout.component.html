@@ -1,5 +1,5 @@
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #sidenav mode="side" opened class="sidenav">
+  <mat-sidenav #sidenav [mode]="isSalesPage ? 'over' : 'side'" [opened]="!isSalesPage" class="sidenav">
     <div class="sidenav-header">
       <div class="brand-mark" aria-hidden="true">MS</div>
       <div class="brand-text">
@@ -115,7 +115,7 @@
         </button>
       </mat-menu>
     </mat-toolbar>
-    <div class="content">
+    <div class="content" [class.sales-content]="isSalesPage">
       <router-outlet></router-outlet>
     </div>
   </mat-sidenav-content>

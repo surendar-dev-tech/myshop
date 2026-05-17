@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { timeout, finalize } from 'rxjs/operators';
 import { ShopUser, UserService } from '../core/services/user.service';
 import { EmployeeDialogComponent } from './employee-dialog.component';
 
@@ -36,7 +37,8 @@ export class EmployeesComponent implements OnInit {
   constructor(
     private userService: UserService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -45,20 +47,26 @@ export class EmployeesComponent implements OnInit {
 
   loadUsers(): void {
     this.isLoading = true;
-    this.userService.getUsers().subscribe({
+    this.userService.getUsers()
+      .pipe(
+        timeout({ first: 10000 }),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.dataSource.data = response.data;
         } else {
           this.dataSource.data = [];
         }
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading users:', error);
         this.showErrorMessage('Could not load employees. Are you logged in as admin?');
         this.dataSource.data = [];
-        this.isLoading = false;
       }
     });
   }

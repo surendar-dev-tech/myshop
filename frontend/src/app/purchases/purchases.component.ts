@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -53,7 +53,8 @@ export class PurchasesComponent implements OnInit {
   constructor(
     private purchaseService: PurchaseService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +69,7 @@ export class PurchasesComponent implements OnInit {
         timeout({ first: 60000 }),
         finalize(() => {
           this.isLoading = false;
+          this.cdr.detectChanges();
         })
       )
       .subscribe({

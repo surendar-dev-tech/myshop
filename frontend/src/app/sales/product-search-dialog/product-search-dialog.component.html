@@ -1,0 +1,45 @@
+<div class="search-dialog-container">
+  <div class="search-header">
+    <input 
+      #searchInput
+      type="text" 
+      class="search-input" 
+      placeholder="Search product by name or barcode..." 
+      [(ngModel)]="searchTerm" 
+      (ngModelChange)="onSearchChange()"
+      autocomplete="off">
+  </div>
+  
+  <div class="search-body">
+    <div *ngIf="isLoading" class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+    
+    <table class="search-table" *ngIf="!isLoading && products.length > 0">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Barcode</th>
+          <th>Price</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of products; let i = index" 
+            class="product-row" 
+            [class.selected]="i === selectedIndex"
+            (click)="selectProduct(p)"
+            (mouseenter)="selectedIndex = i">
+          <td>{{ p.name }}</td>
+          <td>{{ p.barcode || '-' }}</td>
+          <td>₹{{ p.sellingPrice }}</td>
+          <td>{{ p.currentStock || 0 }}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="!isLoading && products.length === 0" class="empty-state">
+      No products found for "{{ searchTerm }}"
+    </div>
+  </div>
+</div>

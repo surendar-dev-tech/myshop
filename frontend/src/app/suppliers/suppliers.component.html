@@ -14,12 +14,12 @@
         <p>Loading suppliers...</p>
       </div>
 
-      <table 
-        *ngIf="!isLoading" 
-        mat-table 
-        [dataSource]="suppliersDataSource" 
+      <table
+        *ngIf="!isLoading"
+        mat-table
+        [dataSource]="suppliersDataSource"
         class="suppliers-table">
-        
+
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let supplier">{{ supplier.name }}</td>
@@ -40,15 +40,6 @@
           <td mat-cell *matCellDef="let supplier">{{ supplier.email || 'N/A' }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="active">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let supplier">
-            <span [class]="supplier.active ? 'status-active' : 'status-inactive'">
-              {{ supplier.active ? 'Active' : 'Inactive' }}
-            </span>
-          </td>
-        </ng-container>
-
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let supplier">
@@ -56,7 +47,7 @@
               <mat-icon>edit</mat-icon>
             </button>
             <button mat-icon-button color="warn" (click)="deleteSupplier(supplier.id!)" matTooltip="Deactivate">
-              <mat-icon>delete</mat-icon>
+              <mat-icon>block</mat-icon>
             </button>
           </td>
         </ng-container>
@@ -67,18 +58,9 @@
 
       <div *ngIf="!isLoading && suppliersDataSource.data.length === 0" class="empty-state">
         <mat-icon class="empty-icon">local_shipping</mat-icon>
-        <h3>No Suppliers</h3>
+        <h3>No Active Suppliers</h3>
         <p>Click "Add Supplier" to create your first supplier.</p>
       </div>
     </mat-card-content>
   </mat-card>
 </div>
-
-
-
-
-
-
-
-
-

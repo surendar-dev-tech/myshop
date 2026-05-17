@@ -52,8 +52,10 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
             @Param("endDate") LocalDateTime endDate);
 
     @EntityGraph(attributePaths = {"customer", "user", "items", "items.product"})
-    @Query("SELECT s FROM Sale s WHERE s.company.id = :companyId ORDER BY s.createdAt DESC")
     List<Sale> findByCompany_IdOrderByCreatedAtDesc(@Param("companyId") Long companyId);
+
+    @EntityGraph(attributePaths = {"customer", "user", "items", "items.product"})
+    Optional<Sale> findTopByCompany_IdOrderByCreatedAtDesc(@Param("companyId") Long companyId);
 
     @EntityGraph(attributePaths = {"customer", "user", "items", "items.product"})
     Optional<Sale> findByIdAndCompany_Id(Long id, Long companyId);

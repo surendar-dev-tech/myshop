@@ -6,7 +6,7 @@ export const environment = {
    *
    * For another machine / reverse proxy (e.g. http://192.168.x.x:5080/v1), change only this value.
    */
-  apiUrl: 'http://localhost:8080/api',
+  apiUrl:'http://localhost:8080/api', //'https://myshop-w0hy.onrender.com/api',
 
   /**
    * QZ Tray (https://qz.io): install on each POS machine, enable “Allow unsigned requests” for dev,

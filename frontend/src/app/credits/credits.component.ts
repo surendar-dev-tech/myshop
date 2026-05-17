@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { timeout, finalize } from 'rxjs/operators';
 import { ApiResponse } from '../core/models/auth.model';
 import { CreditHistoryDialogComponent } from './credit-history-dialog.component';
 
@@ -50,10 +51,14 @@ export class CreditsComponent implements OnInit {
   }
   isLoading = false;
 
+  /** Simple 30s in-memory cache for the credits list. */
+  private creditsCache: { data: OutstandingCredit[]; expiresAt: number } | null = null;
+
   constructor(
     private httpClient: HttpClient,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -61,23 +66,36 @@ export class CreditsComponent implements OnInit {
   }
 
   loadOutstandingCredits(): void {
+    // Serve from cache if still fresh.
+    if (this.creditsCache && this.creditsCache.expiresAt > Date.now()) {
+      this.creditsDataSource.data = this.creditsCache.data;
+      return;
+    }
     this.isLoading = true;
-    this.httpClient.get<ApiResponse<OutstandingCredit[]>>(`${environment.apiUrl}/credits/outstanding`).subscribe({
+    this.httpClient.get<ApiResponse<OutstandingCredit[]>>(`${environment.apiUrl}/credits/outstanding`)
+      .pipe(
+        timeout({ first: 10000 }),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.creditsDataSource.data = response.data
+          const sorted = response.data
             .slice()
             .sort((a, b) => a.customerName.localeCompare(b.customerName, undefined, { sensitivity: 'base' }));
+          this.creditsDataSource.data = sorted;
+          this.creditsCache = { data: sorted, expiresAt: Date.now() + 30_000 };
         } else {
           this.creditsDataSource.data = [];
         }
-        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading outstanding credits:', error);
         this.showErrorMessage('Error loading outstanding credits. Please try again.');
         this.creditsDataSource.data = [];
-        this.isLoading = false;
       }
     });
   }

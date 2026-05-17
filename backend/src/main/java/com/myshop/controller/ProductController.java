@@ -35,21 +35,21 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Product updated successfully", updated));
     }
     
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<ProductDto>> getProductById(@PathVariable Long id) {
-        ProductDto product = productService.getProductById(id);
-        return ResponseEntity.ok(ApiResponse.success(product));
-    }
-    
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductDto>>> getAllProducts() {
         List<ProductDto> products = productService.getAllProducts();
         return ResponseEntity.ok(ApiResponse.success(products));
     }
-    
+
     @GetMapping("/active")
     public ResponseEntity<ApiResponse<List<ProductDto>>> getActiveProducts() {
         List<ProductDto> products = productService.getActiveProducts();
+        return ResponseEntity.ok(ApiResponse.success(products));
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ProductDto>>> searchProducts(@RequestParam String q) {
+        List<ProductDto> products = productService.searchActiveProducts(q);
         return ResponseEntity.ok(ApiResponse.success(products));
     }
     
@@ -58,6 +58,12 @@ public class ProductController {
     public ResponseEntity<ApiResponse<List<ProductDto>>> getLowStockProducts() {
         List<ProductDto> products = productService.getLowStockProducts();
         return ResponseEntity.ok(ApiResponse.success(products));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProductDto>> getProductById(@PathVariable Long id) {
+        ProductDto product = productService.getProductById(id);
+        return ResponseEntity.ok(ApiResponse.success(product));
     }
     
     @DeleteMapping("/{id}")
